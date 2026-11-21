@@ -98,3 +98,21 @@ Cada extensión desarrollada **DEBE** incluir de forma visible la atribución de
      ```
 3. **Automatización:**
    - El hook de Git `pre-commit` y el flujo de trabajo de GitHub Actions (`.github/workflows/build-and-release.yml`) garantizan que los ZIPs en `/releases` siempre reflejen la última versión estable del código.
+
+---
+
+## 🎨 7. Gestión Centralizada y Modular de Iconos
+
+1. **Directorio Raíz `/icons`:**
+   - Todas las imágenes maestras de los iconos residen de forma centralizada en la raíz del monorepo, agrupadas por extensión:
+     ```text
+     icons/
+     ├── docguard/      # icon-16.png, icon-48.png, icon-128.png
+     ├── dark-mode/     # icon-16.png, icon-48.png, icon-128.png
+     └── recordflow/    # icon-16.png, icon-48.png, icon-128.png
+     ```
+2. **Sincronización Automática:**
+   - Antes de empaquetar o compilar, el script `scripts/sync-icons.js` (o `npm run sync:icons`) replica los iconos automáticamente dentro del `public/` de cada extensión según su nombre.
+   - El comando `npm run pack` ejecuta la sincronización de iconos como primer paso obligatorio.
+3. **Generación Programática:**
+   - Para crear nuevos conjuntos de iconos con diseño moderno en alta resolución (512px downsampled con Lanczos a 128, 48, 16px), utilizar `npm run generate:icons` (`scripts/generate-icons.py`).

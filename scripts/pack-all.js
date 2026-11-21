@@ -2,12 +2,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { syncAllIcons } from './sync-icons.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const EXTENSIONS_DIR = path.join(ROOT_DIR, 'extensions');
 const RELEASES_DIR = path.join(ROOT_DIR, 'releases');
+
+// 1. Sync all icons from root /icons folder
+syncAllIcons();
 
 // Ensure root releases directory exists
 if (!fs.existsSync(RELEASES_DIR)) {

@@ -6,6 +6,8 @@
   "scripts": {
     "pack": "node scripts/pack-all.js",
     "zip:all": "node scripts/pack-all.js",
+    "sync:icons": "node scripts/sync-icons.js",
+    "generate:icons": "python scripts/generate-icons.py",
     "build:all": "npm run build:docguard && npm run build:dark-mode && npm run build:recordflow",
     "test:docguard": "node extensions/docguard/test/run-tests.js",
     "build:docguard": "npm --prefix extensions/docguard run build",
