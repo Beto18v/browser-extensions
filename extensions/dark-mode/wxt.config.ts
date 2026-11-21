@@ -1,7 +1,18 @@
 import { defineConfig } from "wxt";
+import path from "node:path";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
+  alias: {
+    "@shared": path.resolve(__dirname, "../../shared"),
+  },
+  vite: () => ({
+    resolve: {
+      alias: {
+        "@shared": path.resolve(__dirname, "../../shared"),
+      },
+    },
+  }),
   manifest: {
     name: "Eclipse — Universal Dark Mode",
     description: "Intelligent, zero-flashbang universal dark mode with smart media protection and site toggles.",

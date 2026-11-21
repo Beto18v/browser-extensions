@@ -5,6 +5,8 @@ import {
   deleteRecording,
   type Recording,
 } from '@/utils/db';
+import '@shared/components/nival-footer';
+import '@shared/components/nival-lang-switch';
 import {
   getCurrentLang,
   setLang,
@@ -25,8 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let targetId = urlParams.get('id');
 
   // DOM Elements
-  const langBtn = document.getElementById('lang-btn') as HTMLButtonElement;
-  const langLabel = document.getElementById('lang-label') as HTMLElement;
+  const langBtn = document.getElementById('lang-btn') as HTMLButtonElement | null;
+  const langLabel = document.getElementById('lang-label') as HTMLElement | null;
 
   const videoPlayer = document.getElementById('video-player') as HTMLVideoElement;
   const videoLoader = document.getElementById('video-loader') as HTMLElement;
@@ -47,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const libraryCount = document.getElementById('library-count') as HTMLElement;
 
   function updateI18nLabels() {
-    langLabel.textContent = currentLang.toUpperCase();
+    if (langLabel) langLabel.textContent = currentLang.toUpperCase();
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n');
       if (key) {
@@ -117,11 +119,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Language switch
-  langBtn.addEventListener('click', async () => {
-    currentLang = currentLang === 'es' ? 'en' : 'es';
-    await setLang(currentLang);
-    updateI18nLabels();
-    renderLibrary();
+  if (langBtn) {
+    langBtn.addEventListener('click', async () => {
+      currentLang = currentLang === 'es' ? 'en' : 'es';
+      await setLang(currentLang);
+      updateI18nLabels();
+      renderLibrary();
+    });
+  }
+
+  window.addEventListener('langchange', async (e: Event) => {
+    const ce = e as CustomEvent<{ lang?: Language }>;
+    if (ce.detail?.lang && (ce.detail.lang === 'es' || ce.detail.lang === 'en')) {
+      currentLang = ce.detail.lang;
+      await setLang(currentLang);
+      updateI18nLabels();
+      renderLibrary();
+    }
   });
 
   // Rename title

@@ -61,17 +61,17 @@ Este documento establece las reglas obligatorias de arquitectura, rendimiento, d
 
 ## 👤 4. Marca Personal y Atribución Unificada (MANDATORIO)
 
-Cada extensión desarrollada **DEBE** incluir de forma visible la atribución del autor en sus interfaces de usuario (popups, sidepanels y páginas de estudio):
+Cada extensión desarrollada **DEBE** incluir de forma visible la atribución del autor en sus interfaces de usuario utilizando el Web Component nativo centralizado en `@shared/components/nival-footer`:
 
 ```html
-<!-- Footer estándar de autor -->
-<footer class="footer-branding">
-  <span>Desarrollado por</span>
-  <a href="https://nival.is-a.dev/" target="_blank" rel="noopener noreferrer">Nicolás Valenzuela</a>
-</footer>
+<!-- Web Component estándar de autor -->
+<nival-footer></nival-footer>
 ```
 
-- El nombre del autor debe estar resaltado con el color de acento de la extensión y redirigir siempre a su portfolio personal: `https://nival.is-a.dev/`.
+- El componente utiliza Shadow DOM encapsulado y adapta automáticamente el color del enlace consumiendo la variable CSS `--accent-color` de cada extensión:
+  - **DocGuard**: `--accent-color: #10b981;` (Esmeralda)
+  - **Eclipse**: `--accent-color: #14b8a6;` (Turquesa)
+  - **RecordFlow**: `--accent-color: #6366f1;` (Índigo)
 - En `package.json` raíz y de cada extensión, mantener el campo:
   `"author": "Nicolas Valenzuela (Beto18v)"`
 
@@ -80,7 +80,11 @@ Cada extensión desarrollada **DEBE** incluir de forma visible la atribución de
 ## 🌐 5. Internacionalización Bilingüe (ES / EN)
 
 - Toda interfaz de usuario y mensaje debe contar con soporte nativo tanto en **Español (ES)** como en **Inglés (EN)**.
-- Puede implementarse mediante carpetas estándar `_locales/en` y `_locales/es` o mediante diccionarios tipados `utils/i18n.ts` con selectores instantáneos de idioma.
+- Se debe integrar el Web Component compartido `@shared/components/nival-lang-switch`:
+  ```html
+  <nival-lang-switch></nival-lang-switch>
+  ```
+  Este botón conmuta dinámicamente entre ES y EN, guarda la preferencia en `chrome.storage.local` y emite el evento global `langchange` para actualizar toda la UI activa instantáneamente.
 
 ---
 

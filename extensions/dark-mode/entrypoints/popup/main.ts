@@ -1,13 +1,73 @@
+import '@shared/components/nival-footer';
+import '@shared/components/nival-lang-switch';
+
+declare const chrome: any;
+
 document.addEventListener("DOMContentLoaded", async () => {
   const globalToggle = document.getElementById("global-toggle") as HTMLInputElement;
   const siteToggle = document.getElementById("site-toggle") as HTMLInputElement;
   const siteLabel = document.getElementById("site-label") as HTMLElement;
   const siteSublabel = document.getElementById("site-sublabel") as HTMLElement;
+  const globalLabel = document.getElementById("global-label") as HTMLElement;
+  const globalSublabel = document.getElementById("global-sublabel") as HTMLElement;
+  const shortcutLabel = document.getElementById("shortcut-label") as HTMLElement;
+
+  let currentLang: "es" | "en" = "es";
+  try {
+    const stored = await chrome.storage.local.get(["app_lang"]);
+    if (stored?.app_lang === "en" || stored?.app_lang === "es") {
+      currentLang = stored.app_lang;
+    }
+  } catch {}
+
+  const i18n = {
+    es: {
+      globalLabel: "Dark Mode Global",
+      globalSublabel: "Activar en toda la web",
+      siteLabel: "Sitio actual",
+      siteDetecting: "detectando...",
+      notAvailable: "No disponible",
+      internalPage: "Página interna",
+      shortcut: "Atajo rápido:",
+    },
+    en: {
+      globalLabel: "Global Dark Mode",
+      globalSublabel: "Activate across the web",
+      siteLabel: "Current site",
+      siteDetecting: "detecting...",
+      notAvailable: "Not available",
+      internalPage: "Internal page",
+      shortcut: "Quick shortcut:",
+    },
+  };
+
+  let currentHost = "";
+  let isRestricted = false;
+
+  function updateLabels() {
+    const t = i18n[currentLang];
+    if (globalLabel) globalLabel.textContent = t.globalLabel;
+    if (globalSublabel) globalSublabel.textContent = t.globalSublabel;
+    if (shortcutLabel) shortcutLabel.textContent = t.shortcut;
+    if (isRestricted) {
+      if (siteLabel) siteLabel.textContent = t.notAvailable;
+      if (siteSublabel) siteSublabel.textContent = currentHost || t.internalPage;
+    } else {
+      if (siteLabel) siteLabel.textContent = t.siteLabel;
+      if (siteSublabel) siteSublabel.textContent = currentHost || t.siteDetecting;
+    }
+  }
+
+  window.addEventListener("langchange", (e: Event) => {
+    const ce = e as CustomEvent<{ lang?: "es" | "en" }>;
+    if (ce.detail?.lang && (ce.detail.lang === "es" || ce.detail.lang === "en")) {
+      currentLang = ce.detail.lang;
+      updateLabels();
+    }
+  });
 
   // 1. Get current active tab hostname and check if restricted
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  let currentHost = "";
-  let isRestricted = false;
 
   if (tab?.url) {
     try {
@@ -34,11 +94,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (isRestricted) {
     siteToggle.disabled = true;
     siteToggle.checked = false;
-    siteLabel.textContent = "No disponible";
-    siteSublabel.textContent = currentHost || "Página interna";
-  } else {
-    siteSublabel.textContent = currentHost;
   }
+  updateLabels();
 
   // 2. Load stored settings
   const data = await chrome.storage.local.get(["eclipse_enabled", "eclipse_disabled_sites"]);

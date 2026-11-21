@@ -1,6 +1,17 @@
 import { defineConfig } from "wxt";
+import path from "node:path";
 
 export default defineConfig({
+  alias: {
+    "@shared": path.resolve(__dirname, "../../shared"),
+  },
+  vite: () => ({
+    resolve: {
+      alias: {
+        "@shared": path.resolve(__dirname, "../../shared"),
+      },
+    },
+  }),
   manifest: {
     name: "__MSG_appName__",
     default_locale: "en",

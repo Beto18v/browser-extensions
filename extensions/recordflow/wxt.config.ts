@@ -1,6 +1,17 @@
 import { defineConfig } from "wxt";
+import path from "node:path";
 
 export default defineConfig({
+  alias: {
+    "@shared": path.resolve(__dirname, "../../shared"),
+  },
+  vite: () => ({
+    resolve: {
+      alias: {
+        "@shared": path.resolve(__dirname, "../../shared"),
+      },
+    },
+  }),
   manifest: {
     name: "RecordFlow — Screen & Camera Recorder",
     description:

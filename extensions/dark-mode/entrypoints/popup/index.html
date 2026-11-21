@@ -13,15 +13,18 @@
           <span class="icon">🌙</span>
           <span class="title">Eclipse</span>
         </div>
-        <span class="badge">Universal</span>
+        <div class="header-actions">
+          <span class="badge">Universal</span>
+          <nival-lang-switch></nival-lang-switch>
+        </div>
       </header>
 
       <main class="content">
         <!-- Global Switch -->
         <div class="switch-row">
           <div class="label-group">
-            <span class="main-label">Dark Mode Global</span>
-            <span class="sub-label">Activar en toda la web</span>
+            <span class="main-label" id="global-label">Dark Mode Global</span>
+            <span class="sub-label" id="global-sublabel">Activar en toda la web</span>
           </div>
           <label class="toggle">
             <input type="checkbox" id="global-toggle" checked />
@@ -44,13 +47,10 @@
 
       <footer class="footer">
         <div class="shortcut">
-          <span>Atajo rápido:</span>
+          <span id="shortcut-label">Atajo rápido:</span>
           <kbd>Alt + Shift + D</kbd>
         </div>
-        <div class="branding">
-          <span>Desarrollado por</span>
-          <a href="https://nival.is-a.dev/" target="_blank" rel="noopener noreferrer">Nicolás Valenzuela</a>
-        </div>
+        <nival-footer></nival-footer>
       </footer>
     </div>
     <script type="module" src="./main.ts"></script>

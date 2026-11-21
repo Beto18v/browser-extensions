@@ -8,8 +8,9 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@shared/*": ["../../shared/*"]
     }
   },
-  "include": ["entrypoints/**/*", "utils/**/*", ".wxt/wxt.d.ts"]
+  "include": ["entrypoints/**/*", "utils/**/*", "../../shared/**/*", ".wxt/wxt.d.ts"]
 }

@@ -10,6 +10,8 @@ import {
   splitSentences,
   ParsedSentence,
 } from "@/modules/filters";
+import '@shared/components/nival-footer';
+import '@shared/components/nival-lang-switch';
 import {
   buildShingles,
   computeShingleContainment,
@@ -99,7 +101,7 @@ const filterIntCount = $<HTMLElement>("filter-int-count");
 const noMatchesBox = $<HTMLElement>("no-matches-box");
 const matchesList = $<HTMLUListElement>("matches-list");
 const copyReportBtn = $<HTMLButtonElement>("copy-report-btn");
-const langToggle = $<HTMLButtonElement>("lang-toggle");
+const langToggle = document.getElementById("lang-toggle") as HTMLButtonElement | null;
 const themeToggle = $<HTMLButtonElement>("theme-toggle");
 
 // ─── i18n View Binding ───
@@ -668,11 +670,23 @@ document.querySelectorAll<HTMLButtonElement>(".filter-pill").forEach((pill) => {
   });
 });
 
-langToggle.addEventListener("click", () => {
-  currentLang = currentLang === "es" ? "en" : "es";
-  localStorage.setItem("docguard_lang", currentLang);
-  applyI18N();
-  if (lastResult) renderResults(lastResult);
+if (langToggle) {
+  langToggle.addEventListener("click", () => {
+    currentLang = currentLang === "es" ? "en" : "es";
+    localStorage.setItem("docguard_lang", currentLang);
+    applyI18N();
+    if (lastResult) renderResults(lastResult);
+  });
+}
+
+window.addEventListener("langchange", (e: Event) => {
+  const ce = e as CustomEvent<{ lang?: Language }>;
+  if (ce.detail?.lang && (ce.detail.lang === "es" || ce.detail.lang === "en")) {
+    currentLang = ce.detail.lang;
+    localStorage.setItem("docguard_lang", currentLang);
+    applyI18N();
+    if (lastResult) renderResults(lastResult);
+  }
 });
 
 themeToggle.addEventListener("click", () => {

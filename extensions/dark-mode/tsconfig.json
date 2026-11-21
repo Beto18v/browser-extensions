@@ -1,4 +1,5 @@
 {
+  "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
@@ -7,8 +8,9 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@shared/*": ["../../shared/*"]
     }
   },
-  "include": ["entrypoints/**/*", ".wxt/wxt.d.ts"]
+  "include": ["entrypoints/**/*", "../../shared/**/*", ".wxt/wxt.d.ts"]
 }
