@@ -2,7 +2,11 @@
 > **Repository:** `browser-extensions-suite`  
 > **Author:** Nicolás Valenzuela ([Portfolio](https://nival.is-a.dev/) | [GitHub](https://github.com/Beto18v))
 
-Este documento establece las reglas obligatorias de arquitectura, rendimiento, diseño y marca personal que cualquier agente de IA o desarrollador debe seguir al mantener o crear extensiones en este repositorio.
+Este documento establece las reglas obligatorias de arquitectura, rendimiento, diseño, marca personal y control de versiones que cualquier agente de IA o desarrollador debe seguir al mantener o crear extensiones en este repositorio.
+
+> 🛑 **REGLA DE ORO DE CONTROL DE VERSIONES:**  
+> Queda **estrictamente prohibido** ejecutar `git commit` o `git push` de forma automática o por iniciativa propia del agente.  
+> **Cualquier commit o push a Git requiere autorización explícita del usuario en el chat.**
 
 ---
 
@@ -120,3 +124,13 @@ Cada extensión desarrollada **DEBE** incluir de forma visible la atribución de
    - El comando `npm run pack` ejecuta la sincronización de iconos como primer paso obligatorio.
 3. **Generación Programática:**
    - Para crear nuevos conjuntos de iconos con diseño moderno en alta resolución (512px downsampled con Lanczos a 128, 48, 16px), utilizar `npm run generate:icons` (`scripts/generate-icons.py`).
+
+---
+
+## 🛑 8. Política de Git: Autorización Explícita Requerida (MANDATORIO)
+
+1. **Prohibido Commit o Push Autónomo:**
+   - Ningún agente de IA debe ejecutar `git commit`, `git push` o alterar el historial remoto de Git sin que el usuario lo solicite o autorice explícitamente en el hilo de conversación.
+2. **Ciclo de Trabajo Seguro:**
+   - Realizar cambios, compilar, ejecutar pruebas y mostrar el resumen del trabajo al usuario.
+   - Esperar a que el usuario valide y dé luz verde antes de ejecutar comandos que modifiquen el control de versiones remoto.

@@ -2,6 +2,14 @@ import { saveRecording } from '@/utils/db';
 import '@shared/components/nival-footer';
 import '@shared/components/nival-lang-switch';
 import {
+  ICON_CAMERA,
+  ICON_MONITOR,
+  ICON_MONITOR_CAMERA,
+  ICON_PAUSE,
+  ICON_PLAY,
+  ICON_TRASH,
+} from '@shared/icons';
+import {
   getCurrentLang,
   setLang,
   t,
@@ -31,6 +39,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const centerModeIcon = document.getElementById('center-mode-icon') as HTMLElement;
   const btnStop = document.getElementById('btn-stop-recording') as HTMLButtonElement;
 
+  const btnPause = document.getElementById('btn-pause-recording') as HTMLButtonElement;
+  const btnPauseLabel = document.getElementById('btn-pause-label') as HTMLElement;
+  const pauseIcon = document.getElementById('pause-icon') as HTMLElement;
+  const btnDiscard = document.getElementById('btn-discard-recording') as HTMLButtonElement;
+  const studioVuBar = document.getElementById('studio-vu-bar') as HTMLElement;
+
+  const countdownOverlay = document.getElementById('countdown-overlay') as HTMLElement;
+  const countdownNumber = document.getElementById('countdown-number') as HTMLElement;
+
   const recordingActiveView = document.getElementById('recording-active-view') as HTMLElement;
   const recordingStandbyView = document.getElementById('recording-standby-view') as HTMLElement;
   const standbyTitle = document.getElementById('standby-title') as HTMLElement;
@@ -44,12 +61,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cameraStream: MediaStream | null = null;
   let micStream: MediaStream | null = null;
   let audioContext: AudioContext | null = null;
+  let vuAnalyser: AnalyserNode | null = null;
+  let vuAnimId: number | null = null;
   let canvasStream: MediaStream | null = null;
   let animFrameId: number | null = null;
 
   let isRecording = false;
   let isStopping = false;
+  let isPaused = false;
   let recordingStartTime = 0;
+  let accumulatedElapsedMs = 0;
+  let lastResumeTime = 0;
   let timerInterval: number | null = null;
 
   function updateI18nLabels() {
@@ -63,14 +85,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Update dynamic mode badge
     if (mode === 'screen-camera') {
-      activeModeBadge.textContent = `🖥️+📹 ${t('mode_screen_camera', currentLang)}`;
-      centerModeIcon.textContent = '🖥️+📹';
+      activeModeBadge.innerHTML = `${ICON_MONITOR_CAMERA} <span>${t('mode_screen_camera', currentLang)}</span>`;
+      centerModeIcon.innerHTML = ICON_MONITOR_CAMERA;
     } else if (mode === 'screen') {
-      activeModeBadge.textContent = `🖥️ ${t('mode_screen_only', currentLang)}`;
-      centerModeIcon.textContent = '🖥️';
+      activeModeBadge.innerHTML = `${ICON_MONITOR} <span>${t('mode_screen_only', currentLang)}</span>`;
+      centerModeIcon.innerHTML = ICON_MONITOR;
     } else {
-      activeModeBadge.textContent = `📹 ${t('mode_camera_only', currentLang)}`;
-      centerModeIcon.textContent = '📹';
+      activeModeBadge.innerHTML = `${ICON_CAMERA} <span>${t('mode_camera_only', currentLang)}</span>`;
+      centerModeIcon.innerHTML = ICON_CAMERA;
+    }
+
+    if (isPaused) {
+      statusBadgeText.textContent = t('floating_paused', currentLang);
+      btnPauseLabel.textContent = t('floating_resume', currentLang);
+    } else if (isRecording) {
+      statusBadgeText.textContent = t('universal_status_recording', currentLang);
+      btnPauseLabel.textContent = t('floating_pause', currentLang);
     }
   }
 
@@ -92,6 +122,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  function playTone(freq: number) {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.16);
+    } catch {
+      // ignore
+    }
+  }
+
   function getSupportedMimeType(): string {
     const types = [
       'video/webm;codecs=vp9,opus',
@@ -111,6 +161,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (animFrameId) {
       cancelAnimationFrame(animFrameId);
       animFrameId = null;
+    }
+    if (vuAnimId) {
+      cancelAnimationFrame(vuAnimId);
+      vuAnimId = null;
     }
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -134,6 +188,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     cameraStream = null;
     micStream = null;
     canvasStream = null;
+    vuAnalyser = null;
+
+    if (studioVuBar) {
+      studioVuBar.style.width = '0%';
+    }
 
     if (audioContext && audioContext.state !== 'closed') {
       try {
@@ -165,10 +224,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     recordingActiveView.classList.remove('hidden');
   }
 
+  // 3.. 2.. 1.. Animated Countdown Overlay
+  function runStudioCountdown(onComplete: () => void) {
+    if (!countdownOverlay || !countdownNumber) {
+      onComplete();
+      return;
+    }
+
+    countdownOverlay.classList.remove('hidden');
+    countdownNumber.textContent = '3';
+    playTone(520);
+
+    let step = 3;
+    const interval = window.setInterval(() => {
+      step--;
+      if (step > 0) {
+        playTone(520);
+        countdownNumber.style.animation = 'none';
+        void countdownNumber.offsetWidth; // trigger reflow
+        countdownNumber.style.animation = 'pop-digit-studio 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+        countdownNumber.textContent = step.toString();
+      } else {
+        clearInterval(interval);
+        playTone(880);
+        countdownOverlay.classList.add('hidden');
+        onComplete();
+      }
+    }, 1000);
+  }
+
   async function startRecording() {
     try {
       recordedChunks = [];
       isStopping = false;
+      isPaused = false;
+      accumulatedElapsedMs = 0;
 
       let finalStreamToRecord: MediaStream;
 
@@ -227,7 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         }
 
-        // Handle audio mixing via AudioContext
+        // Handle audio mixing & VU-meter via AudioContext
         const screenAudioTracks = screenStream.getAudioTracks();
         const micAudioTracks = micStream?.getAudioTracks() || [];
         let mixedAudioStream: MediaStream | null = null;
@@ -237,17 +327,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             audioContext = new AudioContext();
             const destination = audioContext.createMediaStreamDestination();
 
+            // Set up real-time VU-meter Analyser
+            vuAnalyser = audioContext.createAnalyser();
+            vuAnalyser.fftSize = 64;
+            vuAnalyser.smoothingTimeConstant = 0.5;
+
             if (screenAudioTracks.length > 0) {
               const screenSource = audioContext.createMediaStreamSource(new MediaStream(screenAudioTracks));
               screenSource.connect(destination);
+              screenSource.connect(vuAnalyser);
             }
 
             if (micAudioTracks.length > 0 && micStream) {
               const micSource = audioContext.createMediaStreamSource(micStream);
               micSource.connect(destination);
+              micSource.connect(vuAnalyser);
             }
 
             mixedAudioStream = destination.stream;
+
+            // Start VU-meter animation loop
+            const dataArray = new Uint8Array(vuAnalyser.frequencyBinCount);
+            const loopVU = () => {
+              if (vuAnalyser && studioVuBar) {
+                vuAnalyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                  sum += dataArray[i];
+                }
+                const avg = sum / dataArray.length;
+                const pct = isPaused ? 0 : Math.min(100, Math.round((avg / 85) * 100));
+                studioVuBar.style.width = `${pct}%`;
+              }
+              vuAnimId = requestAnimationFrame(loopVU);
+            };
+            loopVU();
           } catch (audioErr) {
             console.warn('[RecordFlow Studio] Audio mixing error:', audioErr);
           }
@@ -363,50 +477,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
-      // Initialize MediaRecorder
-      const mimeType = getSupportedMimeType();
-      mediaRecorder = new MediaRecorder(finalStreamToRecord, {
-        mimeType,
-        videoBitsPerSecond: 4_000_000,
-      });
+      // Run 3.. 2.. 1.. Animated Countdown before capturing starts
+      runStudioCountdown(() => {
+        // Initialize MediaRecorder
+        const mimeType = getSupportedMimeType();
+        mediaRecorder = new MediaRecorder(finalStreamToRecord, {
+          mimeType,
+          videoBitsPerSecond: 4_000_000,
+        });
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          recordedChunks.push(event.data);
-        }
-      };
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
 
-      mediaRecorder.onstop = () => {
-        finalizeAndSave();
-      };
+        mediaRecorder.onstop = () => {
+          finalizeAndSave();
+        };
 
-      mediaRecorder.start(1000); // 1s chunks
-      isRecording = true;
-      showActiveUI();
+        mediaRecorder.start(1000); // 1s chunks
+        isRecording = true;
+        showActiveUI();
 
-      // Start live timer
-      recordingStartTime = Date.now();
-      liveTimerText.textContent = '⏱️ 00:00';
-      jumboTimer.textContent = '00:00';
+        // Start live timer
+        recordingStartTime = Date.now();
+        lastResumeTime = Date.now();
+        accumulatedElapsedMs = 0;
+        liveTimerText.textContent = '00:00';
+        jumboTimer.textContent = '00:00';
 
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = window.setInterval(() => {
-        const secs = Math.floor((Date.now() - recordingStartTime) / 1000);
-        const formatted = formatDuration(secs);
-        liveTimerText.textContent = `⏱️ ${formatted}`;
-        jumboTimer.textContent = formatted;
-      }, 1000);
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = window.setInterval(() => {
+          if (!isPaused) {
+            const currentMs = accumulatedElapsedMs + (Date.now() - lastResumeTime);
+            const secs = Math.floor(currentMs / 1000);
+            const formatted = formatDuration(secs);
+            liveTimerText.textContent = formatted;
+            jumboTimer.textContent = formatted;
+          }
+        }, 500);
 
-      // Notify background about active recording
-      chrome.tabs.getCurrent(async (tab) => {
-        await chrome.storage.local.set({
-          recordflow_state: {
-            isRecording: true,
-            tabId: tab?.id,
-            mode,
-            mic: isMic,
-            startTime: recordingStartTime,
-          },
+        // Notify background about active recording
+        chrome.tabs.getCurrent(async (tab) => {
+          await chrome.storage.local.set({
+            recordflow_state: {
+              isRecording: true,
+              tabId: tab?.id,
+              mode,
+              mic: isMic,
+              startTime: recordingStartTime,
+            },
+          });
         });
       });
     } catch (err: any) {
@@ -416,12 +538,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Pause / Resume handler
+  btnPause.addEventListener('click', () => {
+    if (!mediaRecorder) return;
+
+    if (mediaRecorder.state === 'recording') {
+      mediaRecorder.pause();
+      isPaused = true;
+      accumulatedElapsedMs += Date.now() - lastResumeTime;
+      btnPause.classList.add('is-paused');
+      btnPauseLabel.textContent = t('floating_resume', currentLang);
+      pauseIcon.innerHTML = ICON_PLAY;
+      statusBadgeText.textContent = t('floating_paused', currentLang);
+    } else if (mediaRecorder.state === 'paused') {
+      mediaRecorder.resume();
+      isPaused = false;
+      lastResumeTime = Date.now();
+      btnPause.classList.remove('is-paused');
+      btnPauseLabel.textContent = t('floating_pause', currentLang);
+      pauseIcon.innerHTML = ICON_PAUSE;
+      statusBadgeText.textContent = t('universal_status_recording', currentLang);
+    }
+  });
+
+  // Discard handler
+  btnDiscard.addEventListener('click', async () => {
+    if (confirm(t('confirm_discard', currentLang))) {
+      releaseHardware();
+      recordedChunks = [];
+      mediaRecorder = null;
+      isRecording = false;
+      isStopping = false;
+      isPaused = false;
+      await chrome.storage.local.set({
+        recordflow_state: { isRecording: false },
+      });
+      showStandbyUI(true);
+    }
+  });
+
   async function stopAndSaveRecording() {
     if (isStopping) return;
     isStopping = true;
 
     btnStop.disabled = true;
-    btnStop.textContent = '💾 Guardando...';
+    btnStop.textContent = 'Guardando...';
 
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -436,7 +597,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function finalizeAndSave() {
-    const elapsedSeconds = Math.max(1, Math.round((Date.now() - recordingStartTime) / 1000));
+    const currentMs = isPaused
+      ? accumulatedElapsedMs
+      : accumulatedElapsedMs + (Date.now() - lastResumeTime);
+    const elapsedSeconds = Math.max(1, Math.round(currentMs / 1000));
     releaseHardware();
 
     const mimeType = getSupportedMimeType();
@@ -465,12 +629,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (dbErr) {
       console.error('[RecordFlow Studio] Error saving recording to IndexedDB:', dbErr);
       btnStop.disabled = false;
-      btnStop.textContent = '❌ Error al guardar';
+      btnStop.textContent = 'Error al guardar';
     } finally {
       recordedChunks = [];
       mediaRecorder = null;
       isRecording = false;
       isStopping = false;
+      isPaused = false;
     }
   }
 

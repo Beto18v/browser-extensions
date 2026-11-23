@@ -17,7 +17,7 @@ export default defineConfig({
     name: "Eclipse — Universal Dark Mode",
     description: "Intelligent, zero-flashbang universal dark mode with smart media protection and site toggles.",
     version: "1.0.0",
-    permissions: ["storage", "activeTab"],
+    permissions: ["storage", "activeTab", "tabs"],
     commands: {
       "toggle-dark-mode": {
         suggested_key: {

@@ -5,8 +5,17 @@ import {
   deleteRecording,
   type Recording,
 } from '@/utils/db';
+import { convertWebmToMp4 } from '@/utils/mp4';
 import '@shared/components/nival-footer';
 import '@shared/components/nival-lang-switch';
+import {
+  ICON_CLOCK,
+  ICON_HARD_DRIVE,
+  ICON_CALENDAR,
+  ICON_CAMERA,
+  ICON_MONITOR,
+  ICON_MONITOR_CAMERA,
+} from '@shared/icons';
 import {
   getCurrentLang,
   setLang,
@@ -39,7 +48,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const metricMode = document.getElementById('metric-mode') as HTMLElement;
   const metricDate = document.getElementById('metric-date') as HTMLElement;
 
-  const btnDownload = document.getElementById('btn-download') as HTMLButtonElement;
+  const btnDownloadMp4 = document.getElementById('btn-download-mp4') as HTMLButtonElement | null;
+  const labelDownloadMp4 = document.getElementById('label-download-mp4') as HTMLElement | null;
+  const btnDownloadWebm = document.getElementById('btn-download-webm') as HTMLButtonElement | null;
+  const labelDownloadWebm = document.getElementById('label-download-webm') as HTMLElement | null;
   const btnCopy = document.getElementById('btn-copy') as HTMLButtonElement;
   const copyLabel = document.getElementById('copy-label') as HTMLElement;
   const btnRecordNew = document.getElementById('btn-record-new') as HTMLButtonElement;
@@ -47,6 +59,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const libraryGrid = document.getElementById('library-grid') as HTMLElement;
   const libraryCount = document.getElementById('library-count') as HTMLElement;
+  const speedButtons = document.querySelectorAll('.btn-speed') as NodeListOf<HTMLButtonElement>;
+
+  // Playback speed controls
+  speedButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const speed = parseFloat(btn.getAttribute('data-speed') || '1');
+      videoPlayer.playbackRate = speed;
+      speedButtons.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
 
   function updateI18nLabels() {
     if (langLabel) langLabel.textContent = currentLang.toUpperCase();
@@ -63,16 +86,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function updateMetrics(rec: Recording) {
-    metricDuration.textContent = `⏱️ ${formatDuration(rec.duration)}`;
-    metricSize.textContent = `💾 ${formatBytes(rec.size)}`;
-    metricDate.textContent = `📅 ${formatDate(rec.timestamp, currentLang)}`;
+    metricDuration.innerHTML = `${ICON_CLOCK} <span>${formatDuration(rec.duration)}</span>`;
+    metricSize.innerHTML = `${ICON_HARD_DRIVE} <span>${formatBytes(rec.size)}</span>`;
+    metricDate.innerHTML = `${ICON_CALENDAR} <span>${formatDate(rec.timestamp, currentLang)}</span>`;
 
     const modeLabels: Record<string, string> = {
       'screen-camera': t('mode_screen_camera', currentLang),
       screen: t('mode_screen_only', currentLang),
       camera: t('mode_camera_only', currentLang),
     };
-    metricMode.textContent = `📹 ${modeLabels[rec.mode] || rec.mode}`;
+    const modeIcon =
+      rec.mode === 'screen-camera'
+        ? ICON_MONITOR_CAMERA
+        : rec.mode === 'screen'
+        ? ICON_MONITOR
+        : ICON_CAMERA;
+    metricMode.innerHTML = `${modeIcon} <span>${modeLabels[rec.mode] || rec.mode}</span>`;
   }
 
   // Load target recording
@@ -100,15 +129,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     targetId = id;
     currentRecording = await getRecording(id);
 
+    // Si aún no está listo el registro en IndexedDB (carrera de guardado), reintentar hasta 5 veces
+    if (!currentRecording) {
+      for (let i = 0; i < 5; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        currentRecording = await getRecording(id);
+        if (currentRecording) break;
+      }
+    }
+
     if (!currentRecording || !currentRecording.blob) {
       videoLoader.textContent = 'Recording not found in local database.';
       return;
     }
 
-    // Set video src
+    // Set video src and load directly without destructive seeking
     currentBlobUrl = URL.createObjectURL(currentRecording.blob);
     videoPlayer.src = currentBlobUrl;
-    videoLoader.classList.add('hidden');
+    videoPlayer.load();
+
+    const hideLoader = () => {
+      videoLoader.classList.add('hidden');
+    };
+    videoPlayer.onloadeddata = hideLoader;
+    videoPlayer.oncanplay = hideLoader;
+    videoPlayer.onerror = (e) => {
+      console.warn('Video load error:', e);
+      videoLoader.textContent = 'Error al reproducir el video.';
+    };
 
     // Set title and metrics
     titleInput.value = currentRecording.title;
@@ -147,21 +195,69 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Download Video
-  btnDownload.addEventListener('click', () => {
-    if (!currentRecording || !currentBlobUrl) return;
+  // Download Video as MP4 (Universal)
+  if (btnDownloadMp4) {
+    btnDownloadMp4.addEventListener('click', async () => {
+      if (!currentRecording || !currentRecording.blob) return;
 
-    const a = document.createElement('a');
-    a.href = currentBlobUrl;
-    const cleanTitle = currentRecording.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-');
-    a.download = `${cleanTitle || 'recordflow'}.webm`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
+      const originalText = labelDownloadMp4?.textContent || t('btn_download_mp4', currentLang);
+      btnDownloadMp4.disabled = true;
+
+      try {
+        if (labelDownloadMp4) {
+          labelDownloadMp4.textContent = currentLang === 'es' ? 'Convirtiendo a MP4...' : 'Converting to MP4...';
+        }
+
+        const mp4Blob = await convertWebmToMp4(currentRecording.blob, (pct) => {
+          if (labelDownloadMp4) {
+            labelDownloadMp4.textContent = currentLang === 'es' ? `Exportando MP4 (${pct}%)...` : `Exporting MP4 (${pct}%)...`;
+          }
+        });
+
+        if (labelDownloadMp4) {
+          labelDownloadMp4.textContent = currentLang === 'es' ? 'Descargando...' : 'Downloading...';
+        }
+
+        const url = URL.createObjectURL(mp4Blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const cleanTitle = currentRecording.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '-')
+          .replace(/-+/g, '-');
+        a.download = `${cleanTitle || 'recordflow'}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      } catch (err: any) {
+        console.error('MP4 export error:', err);
+        alert(currentLang === 'es' ? 'No se pudo procesar a MP4. Descargando archivo WebM original...' : 'Could not export to MP4. Downloading original WebM...');
+        if (btnDownloadWebm) btnDownloadWebm.click();
+      } finally {
+        btnDownloadMp4.disabled = false;
+        if (labelDownloadMp4) labelDownloadMp4.textContent = originalText;
+      }
+    });
+  }
+
+  // Download Video as WebM (Instant)
+  if (btnDownloadWebm) {
+    btnDownloadWebm.addEventListener('click', () => {
+      if (!currentRecording || !currentBlobUrl) return;
+
+      const a = document.createElement('a');
+      a.href = currentBlobUrl;
+      const cleanTitle = currentRecording.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-');
+      a.download = `${cleanTitle || 'recordflow'}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  }
 
   // Copy local blob link
   btnCopy.addEventListener('click', async () => {
@@ -224,10 +320,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       meta.className = 'lib-meta';
 
       const durSpan = document.createElement('span');
-      durSpan.textContent = `⏱️ ${formatDuration(rec.duration)}`;
+      durSpan.className = 'lib-metric';
+      durSpan.innerHTML = `${ICON_CLOCK} <span>${formatDuration(rec.duration)}</span>`;
 
       const sizeSpan = document.createElement('span');
-      sizeSpan.textContent = `💾 ${formatBytes(rec.size)}`;
+      sizeSpan.className = 'lib-metric';
+      sizeSpan.innerHTML = `${ICON_HARD_DRIVE} <span>${formatBytes(rec.size)}</span>`;
 
       meta.appendChild(durSpan);
       meta.appendChild(sizeSpan);

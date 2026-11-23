@@ -2,6 +2,14 @@ import { getAllRecordingsMeta, deleteRecording, getRecording } from '@/utils/db'
 import '@shared/components/nival-footer';
 import '@shared/components/nival-lang-switch';
 import {
+  ICON_CLOCK,
+  ICON_HARD_DRIVE,
+  ICON_CALENDAR,
+  ICON_PLAY,
+  ICON_DOWNLOAD,
+  ICON_TRASH,
+} from '@shared/icons';
+import {
   getCurrentLang,
   setLang,
   t,
@@ -20,8 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let recordingStartTime = 0;
 
   // DOM Elements
-  const langBtn = document.getElementById('lang-btn') as HTMLButtonElement | null;
-  const langLabel = document.getElementById('lang-label') as HTMLElement | null;
   const tabRecordBtn = document.getElementById('tab-record-btn') as HTMLButtonElement;
   const tabRecentBtn = document.getElementById('tab-recent-btn') as HTMLButtonElement;
   const viewRecord = document.getElementById('view-record') as HTMLElement;
@@ -41,17 +47,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const recordCtaBtn = document.getElementById('record-cta-btn') as HTMLButtonElement;
   const ctaLabel = document.getElementById('cta-label') as HTMLElement;
-  const btnOpenUniversal = document.getElementById('btn-open-universal-studio') as HTMLButtonElement | null;
 
   const errorBanner = document.getElementById('error-banner') as HTMLElement;
   const errorMessage = document.getElementById('error-message') as HTMLElement;
 
   const recentListContainer = document.getElementById('recent-list-container') as HTMLElement;
   const recentEmpty = document.getElementById('recent-empty') as HTMLElement;
+  const btnHardwareSettings = document.getElementById('btn-hardware-settings') as HTMLButtonElement | null;
 
-  // Update i18n text in the UI
+  if (btnHardwareSettings) {
+    btnHardwareSettings.addEventListener('click', () => {
+      chrome.tabs.create({ url: chrome.runtime.getURL('permissions.html') });
+      window.close();
+    });
+  }
+
+  // Update i18n labels in the UI
   function updateI18nLabels() {
-    if (langLabel) langLabel.textContent = currentLang.toUpperCase();
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n');
       if (key) {
@@ -69,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ctaLabel.textContent = t('btn_stop_recording', currentLang);
     } else {
       statusText.textContent = t('status_ready', currentLang);
-      ctaLabel.textContent = t('btn_start_recording', currentLang);
+      ctaLabel.textContent = t('launch_floating_studio', currentLang);
     }
   }
 
@@ -88,17 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     errorBanner.classList.remove('hidden');
     setTimeout(() => {
       errorBanner.classList.add('hidden');
-    }, 5000);
-  }
-
-  // Language Toggle
-  if (langBtn) {
-    langBtn.addEventListener('click', async () => {
-      currentLang = currentLang === 'es' ? 'en' : 'es';
-      await setLang(currentLang);
-      updateI18nLabels();
-      renderRecentRecordings();
-    });
+    }, 4000);
   }
 
   window.addEventListener('langchange', async (e: Event) => {
@@ -130,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Mode selection
   modeButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      if (isRecordingActive) return; // Cannot change mode while recording
+      if (isRecordingActive) return;
       modeButtons.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       selectedMode = btn.getAttribute('data-mode') as any;
@@ -145,6 +147,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? t('audio_mic_active', currentLang)
       : t('audio_mic_muted', currentLang);
   });
+
+  // Pin launcher toggle
+  const pinLauncherToggle = document.getElementById('pin-launcher-toggle') as HTMLInputElement | null;
+  const pinLauncherLabel = document.getElementById('pin-launcher-label') as HTMLElement | null;
+
+  if (pinLauncherToggle) {
+    chrome.storage.local.get('recordflow_pin_launcher').then((data) => {
+      const isPinned = data?.recordflow_pin_launcher === true;
+      pinLauncherToggle.checked = isPinned;
+      if (pinLauncherLabel) {
+        pinLauncherLabel.textContent = isPinned ? 'Activo en páginas' : 'Oculto por defecto';
+      }
+    });
+
+    pinLauncherToggle.addEventListener('change', async () => {
+      const isChecked = pinLauncherToggle.checked;
+      await chrome.storage.local.set({ recordflow_pin_launcher: isChecked });
+      if (pinLauncherLabel) {
+        pinLauncherLabel.textContent = isChecked ? 'Activo en páginas' : 'Oculto por defecto';
+      }
+    });
+  }
 
   // Check current recording state
   async function syncRecordingState() {
@@ -182,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       recordCtaBtn.classList.remove('btn-stop');
       recordCtaBtn.classList.add('btn-start');
-      ctaLabel.textContent = t('btn_start_recording', currentLang);
+      ctaLabel.textContent = t('launch_floating_studio', currentLang);
 
       if (liveTimerInterval) {
         clearInterval(liveTimerInterval);
@@ -191,52 +215,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // CTA Record Click
+  // CTA Click - Inicia el Hub Flotante en la pantalla (Loom Style) o detiene
   recordCtaBtn.addEventListener('click', async () => {
     if (isRecordingActive) {
-      // Trigger stop
       chrome.runtime.sendMessage({ type: 'STOP_RECORDING_REQUEST' }, () => {
         setRecordingUI(false);
         window.close();
       });
     } else {
-      // Trigger start
       recordCtaBtn.disabled = true;
-      ctaLabel.textContent = '...';
-
       chrome.runtime.sendMessage(
         {
-          type: 'START_RECORDING_REQUEST',
+          type: 'OPEN_FLOATING_HUB',
           mode: selectedMode,
           mic: isMicActive,
         },
         (res) => {
           recordCtaBtn.disabled = false;
-          if (res?.success) {
-            setRecordingUI(true);
-            // Close popup so user interacts with page & screen picker freely
-            setTimeout(() => {
-              window.close();
-            }, 300);
+          if (res?.success !== false) {
+            window.close();
           } else {
-            setRecordingUI(false);
             showError(t('err_recording_failed', currentLang));
           }
         }
       );
+      // Cerrar rápidamente para que el usuario interactúe con la página
+      setTimeout(() => {
+        window.close();
+      }, 250);
     }
   });
-
-  // Direct Universal Studio Recorder button
-  if (btnOpenUniversal) {
-    btnOpenUniversal.addEventListener('click', () => {
-      const url = chrome.runtime.getURL(
-        `recorder.html?mode=${encodeURIComponent(selectedMode)}&mic=${encodeURIComponent(String(isMicActive))}`
-      );
-      chrome.tabs.create({ url });
-      window.close();
-    });
-  }
 
   // Recent recordings rendering
   async function renderRecentRecordings() {
@@ -269,14 +277,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const durBadge = document.createElement('span');
         durBadge.className = 'rec-badge';
-        durBadge.textContent = `⏱️ ${formatDuration(rec.duration)}`;
+        durBadge.innerHTML = `${ICON_CLOCK} <span>${formatDuration(rec.duration)}</span>`;
 
         const sizeBadge = document.createElement('span');
         sizeBadge.className = 'rec-badge';
-        sizeBadge.textContent = `💾 ${formatBytes(rec.size)}`;
+        sizeBadge.innerHTML = `${ICON_HARD_DRIVE} <span>${formatBytes(rec.size)}</span>`;
 
         const dateBadge = document.createElement('span');
-        dateBadge.textContent = formatDate(rec.timestamp, currentLang);
+        dateBadge.className = 'rec-date';
+        dateBadge.innerHTML = `${ICON_CALENDAR} <span>${formatDate(rec.timestamp, currentLang)}</span>`;
 
         meta.appendChild(durBadge);
         meta.appendChild(sizeBadge);
@@ -292,7 +301,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const previewBtn = document.createElement('button');
         previewBtn.className = 'btn-icon';
         previewBtn.title = t('watch', currentLang);
-        previewBtn.textContent = '▶️';
+        previewBtn.innerHTML = ICON_PLAY;
         previewBtn.addEventListener('click', () => {
           chrome.tabs.create({ url: chrome.runtime.getURL(`preview.html?id=${rec.id}`) });
         });
@@ -300,7 +309,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const downloadBtn = document.createElement('button');
         downloadBtn.className = 'btn-icon';
         downloadBtn.title = t('download', currentLang);
-        downloadBtn.textContent = '⬇️';
+        downloadBtn.innerHTML = ICON_DOWNLOAD;
         downloadBtn.addEventListener('click', async () => {
           const fullRec = await getRecording(rec.id);
           if (fullRec && fullRec.blob) {
@@ -316,7 +325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-icon delete';
         deleteBtn.title = t('btn_delete', currentLang);
-        deleteBtn.textContent = '🗑️';
+        deleteBtn.innerHTML = ICON_TRASH;
         deleteBtn.addEventListener('click', async () => {
           if (confirm(t('confirm_delete', currentLang))) {
             await deleteRecording(rec.id);

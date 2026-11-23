@@ -17,7 +17,7 @@ export default defineConfig({
     description:
       "Free, unlimited, local-first screen and circular webcam recording. No time limits, no 25-video caps, 100% private.",
     version: "1.0.0",
-    permissions: ["storage", "activeTab", "tabs"],
+    permissions: ["storage", "activeTab", "tabs", "scripting"],
     action: {
       default_title: "RecordFlow",
     },

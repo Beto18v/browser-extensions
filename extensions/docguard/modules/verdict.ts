@@ -40,12 +40,12 @@ export function computeVerdict(
 ): Verdict {
   const similarityPercent = 100 - originalityPercent;
 
-  // 🟢 Seguro / Listo para entrega (Rango estándar: Similitud <= 20% y <= 3 coincidencias web)
+  // Seguro / Listo para entrega (Rango estándar: Similitud <= 20% y <= 3 coincidencias web)
   if (similarityPercent <= 20 && externalMatchCount <= 3) {
     return {
       level: "safe",
       label: "LISTO PARA ENTREGAR",
-      badge: i18n?.safeBadge || "🟢 LISTO PARA ENTREGAR",
+      badge: i18n?.safeBadge || "LISTO PARA ENTREGAR",
       title: i18n?.safeTitle || "Aprobado para entrega académica",
       desc:
         i18n?.safeDesc ||
@@ -53,12 +53,12 @@ export function computeVerdict(
     };
   }
 
-  // 🔴 Alerta / No recomendado subir aún (Similitud > 35% o >= 6 coincidencias web directas)
+  // Alerta / No recomendado subir aún (Similitud > 35% o >= 6 coincidencias web directas)
   if (similarityPercent > 35 || externalMatchCount >= 6) {
     return {
       level: "danger",
       label: "SIMILITUD ELEVADA",
-      badge: i18n?.dangerBadge || "🔴 SIMILITUD ELEVADA (> 35%)",
+      badge: i18n?.dangerBadge || "SIMILITUD ELEVADA (> 35%)",
       title: i18n?.dangerTitle || "Revisión previa recomendada",
       desc:
         i18n?.dangerDesc ||
@@ -66,11 +66,11 @@ export function computeVerdict(
     };
   }
 
-  // 🟡 Precaución / Similitud moderada (Rango técnico aceptable: 21% - 35%)
+  // Precaución / Similitud moderada (Rango técnico aceptable: 21% - 35%)
   return {
     level: "caution",
     label: "SIMILITUD MODERADA",
-    badge: i18n?.cautionBadge || "🟡 SIMILITUD MODERADA",
+    badge: i18n?.cautionBadge || "SIMILITUD MODERADA",
     title: i18n?.cautionTitle || "Rango técnico aceptable (21% - 35%)",
     desc:
       i18n?.cautionDesc ||

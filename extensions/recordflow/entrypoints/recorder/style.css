@@ -114,6 +114,15 @@ body {
   background: rgba(99, 102, 241, 0.15);
   border-color: var(--accent-primary);
   color: #a5b4fc;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pill.highlight svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
 }
 
 .btn-lang {
@@ -216,6 +225,15 @@ body {
   padding: 6px 14px;
   border-radius: 9999px;
   font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timer-badge-live svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
 }
 
 /* Visual Radar */
@@ -277,9 +295,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
   box-shadow: 0 0 24px rgba(99, 102, 241, 0.6);
   z-index: 2;
+}
+
+.radar-center-icon svg {
+  width: 28px;
+  height: 28px;
+  color: #ffffff;
 }
 
 /* Jumbo Timer */
@@ -311,8 +334,15 @@ body {
 }
 
 .instructions-icon {
-  font-size: 22px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+}
+
+.instructions-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .instructions-content {
@@ -331,6 +361,195 @@ body {
   display: flex;
   justify-content: center;
   margin-top: 6px;
+}
+
+/* Studio VU-Meter */
+.studio-vu-container {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vu-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.vu-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vu-peak {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 10px;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.vu-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.vu-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #10b981 0%, #6366f1 65%, #ef4444 100%);
+  border-radius: 9999px;
+  transition: width 0.08s ease-out;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+}
+
+/* Card Actions Group */
+.card-actions-group {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.btn-studio-action {
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-studio-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-studio-action:active {
+  transform: translateY(0);
+}
+
+.btn-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-action-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-studio-action.btn-pause {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--accent-primary);
+  color: #a5b4fc;
+}
+
+.btn-studio-action.btn-pause.is-paused {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: #f59e0b;
+  color: #fde68a;
+}
+
+.btn-studio-action.btn-discard:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--danger);
+  color: #fca5a5;
+}
+
+/* Countdown Overlay */
+.countdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 15, 29, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.25s ease;
+}
+
+.countdown-card {
+  width: 200px;
+  height: 200px;
+  border-radius: 40px;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(99, 102, 241, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.countdown-number {
+  font-size: 88px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  animation: pop-digit-studio 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  text-shadow: 0 0 24px rgba(99, 102, 241, 0.8);
+}
+
+.countdown-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a5b4fc;
+}
+
+@keyframes pop-digit-studio {
+  0% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  85% {
+    opacity: 1;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
 }
 
 .btn-finish-universal {
@@ -363,7 +582,14 @@ body {
 }
 
 .stop-icon-box {
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stop-icon-box svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* Standby Stage */
@@ -385,8 +611,16 @@ body {
 }
 
 .standby-icon {
-  font-size: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 6px;
+  color: var(--accent-primary);
+}
+
+.standby-icon svg {
+  width: 52px;
+  height: 52px;
 }
 
 .standby-card h2 {
@@ -413,6 +647,20 @@ body {
   box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
   transition: all 0.2s ease;
   margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary-start .btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary-start .btn-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .btn-primary-start:hover {

@@ -171,9 +171,11 @@ async function runTests() {
   });
 
   console.log(`\n${YELLOW}4. Live External Knowledge APIs (Wikipedia & OpenAlex):${RESET}`);
+  const wikiHeaders = { 'User-Agent': 'DocGuardTest/2.1 (https://nival.is-a.dev/; contact@nival.is-a.dev)' };
+
   await itAsync("Wikipedia API should find exact match for 'teoria de la relatividad especial'", async () => {
     const q = encodeURIComponent('"teoria de la relatividad especial"');
-    const res = await fetch(`https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${q}&utf8=&format=json&origin=*`);
+    const res = await fetch(`https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${q}&utf8=&format=json`, { headers: wikiHeaders });
     assert.strictEqual(res.ok, true);
     const data = await res.json();
     assert.ok(data.query && data.query.search.length > 0);
@@ -181,7 +183,7 @@ async function runTests() {
 
   await itAsync("Wikipedia API should return 0 hits for nonsensical phrase", async () => {
     const q = encodeURIComponent('"mi perro salta en los charcos azules de marte"');
-    const res = await fetch(`https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${q}&utf8=&format=json&origin=*`);
+    const res = await fetch(`https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${q}&utf8=&format=json`, { headers: wikiHeaders });
     assert.strictEqual(res.ok, true);
     const data = await res.json();
     assert.strictEqual(data.query.search.length, 0);

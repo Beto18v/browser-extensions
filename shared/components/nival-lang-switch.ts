@@ -1,3 +1,5 @@
+import { ICON_GLOBE } from '../icons';
+
 declare const chrome: any;
 
 export class NivalLangSwitch extends HTMLElement {
@@ -140,6 +142,11 @@ export class NivalLangSwitch extends HTMLElement {
         .lang-pill:active {
           transform: translateY(0);
         }
+        .lang-pill svg {
+          width: 13px;
+          height: 13px;
+          flex-shrink: 0;
+        }
         .lang-text {
           font-size: 11px;
           font-weight: 700;
@@ -147,7 +154,7 @@ export class NivalLangSwitch extends HTMLElement {
         }
       </style>
       <button type="button" class="lang-pill" title="Cambiar idioma / Switch language" aria-label="Toggle language">
-        🌐 <span class="lang-text">${label}</span>
+        ${ICON_GLOBE} <span class="lang-text">${label}</span>
       </button>
     `;
 

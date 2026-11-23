@@ -70,6 +70,7 @@ export default defineContentScript({
     }
 
     function updateTheme() {
+      injectStyleOnce();
       const shouldBeDark = isGlobalEnabled && !isSiteDisabled;
       const el = document.documentElement;
       if (el) {

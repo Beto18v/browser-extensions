@@ -4,6 +4,9 @@ import '@shared/components/nival-lang-switch';
 declare const chrome: any;
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // 1. Query active tab immediately as the very first operation before any await storage calls
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
   const globalToggle = document.getElementById("global-toggle") as HTMLInputElement;
   const siteToggle = document.getElementById("site-toggle") as HTMLInputElement;
   const siteLabel = document.getElementById("site-label") as HTMLElement;
@@ -11,6 +14,36 @@ document.addEventListener("DOMContentLoaded", async () => {
   const globalLabel = document.getElementById("global-label") as HTMLElement;
   const globalSublabel = document.getElementById("global-sublabel") as HTMLElement;
   const shortcutLabel = document.getElementById("shortcut-label") as HTMLElement;
+
+  let currentHost = "";
+  let isRestricted = false;
+
+  if (tab?.url) {
+    try {
+      const url = new URL(tab.url);
+      currentHost = url.hostname;
+      if (!["http:", "https:"].includes(url.protocol)) {
+        isRestricted = true;
+      }
+    } catch {
+      isRestricted = true;
+    }
+  } else {
+    isRestricted = true;
+  }
+
+  // Helper to notify active tab directly (0ms latency, not blocked by isRestricted, catches errors silently)
+  function notifyActiveTab(payload: Record<string, unknown>) {
+    if (tab?.id) {
+      chrome.tabs.sendMessage(tab.id, payload).catch(() => {});
+    }
+  }
+
+  // Gracefully handle UI state for internal or restricted pages
+  if (isRestricted) {
+    siteToggle.disabled = true;
+    siteToggle.checked = false;
+  }
 
   let currentLang: "es" | "en" = "es";
   try {
@@ -41,9 +74,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
   };
 
-  let currentHost = "";
-  let isRestricted = false;
-
   function updateLabels() {
     const t = i18n[currentLang];
     if (globalLabel) globalLabel.textContent = t.globalLabel;
@@ -66,35 +96,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // 1. Get current active tab hostname and check if restricted
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  if (tab?.url) {
-    try {
-      const url = new URL(tab.url);
-      currentHost = url.hostname;
-      if (!["http:", "https:"].includes(url.protocol)) {
-        isRestricted = true;
-      }
-    } catch {
-      isRestricted = true;
-    }
-  } else {
-    isRestricted = true;
-  }
-
-  // Helper to notify the active tab immediately (0ms latency direct messaging)
-  async function notifyActiveTab(payload: Record<string, unknown>) {
-    if (tab?.id && !isRestricted) {
-      chrome.tabs.sendMessage(tab.id, payload).catch(() => {});
-    }
-  }
-
-  // Gracefully handle UI state for internal or restricted pages
-  if (isRestricted) {
-    siteToggle.disabled = true;
-    siteToggle.checked = false;
-  }
   updateLabels();
 
   // 2. Load stored settings
@@ -119,7 +120,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 4. Handle per-site toggle change
   siteToggle.addEventListener("change", async () => {
-    if (isRestricted || !currentHost) return;
+    if (!currentHost && tab?.url) {
+      try {
+        currentHost = new URL(tab.url).hostname;
+      } catch {}
+    }
+    if (!currentHost) return;
     const siteEnabled = siteToggle.checked;
     notifyActiveTab({ type: "ECLIPSE_SET_STATE", siteEnabled });
 

@@ -13,6 +13,13 @@ import {
 import '@shared/components/nival-footer';
 import '@shared/components/nival-lang-switch';
 import {
+  ICON_SHIELD_CHECK,
+  ICON_ALERT_TRIANGLE,
+  ICON_ALERT_CIRCLE,
+  ICON_CLIPBOARD,
+  ICON_CHECK,
+} from '@shared/icons';
+import {
   buildShingles,
   computeShingleContainment,
   buildTermFrequency,
@@ -309,7 +316,15 @@ function renderResults(result: AnalysisResult): void {
 
   if (verdictCard) {
     verdictCard.className = `verdict-card verdict-${verdict.level}`;
-    if (verdictBadge) verdictBadge.textContent = verdict.badge;
+    const verdictIcon =
+      verdict.level === "safe"
+        ? ICON_SHIELD_CHECK
+        : verdict.level === "caution"
+        ? ICON_ALERT_TRIANGLE
+        : ICON_ALERT_CIRCLE;
+    if (verdictBadge) {
+      verdictBadge.innerHTML = `<span class="verdict-icon-wrap">${verdictIcon}</span> <span>${verdict.badge}</span>`;
+    }
     if (verdictTitle) verdictTitle.textContent = verdict.title;
     if (verdictDesc) verdictDesc.textContent = verdict.desc;
   }
@@ -444,12 +459,16 @@ function buildReportText(): string {
 
 async function handleCopyReport(): Promise<void> {
   const text = buildReportText();
+  const showCopiedFeedback = () => {
+    copyReportBtn.innerHTML = `${ICON_CHECK} <span>${translate("copyDone")}</span>`;
+    setTimeout(() => {
+      copyReportBtn.innerHTML = `${ICON_CLIPBOARD} <span id="copy-report-text">${translate("copyReport")}</span>`;
+    }, 2000);
+  };
+
   try {
     await navigator.clipboard.writeText(text);
-    copyReportBtn.innerHTML = translate("copyDone");
-    setTimeout(() => {
-      copyReportBtn.innerHTML = translate("copyReport");
-    }, 2000);
+    showCopiedFeedback();
   } catch {
     const ta = document.createElement("textarea");
     ta.value = text;
@@ -468,10 +487,7 @@ async function handleCopyReport(): Promise<void> {
     }
     document.body.removeChild(ta);
     if (copied) {
-      copyReportBtn.innerHTML = translate("copyDone");
-      setTimeout(() => {
-        copyReportBtn.innerHTML = translate("copyReport");
-      }, 2000);
+      showCopiedFeedback();
     }
   }
 }

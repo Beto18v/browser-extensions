@@ -36,6 +36,8 @@ export const translations: Record<Language, Record<string, string>> = {
     btn_finish_recording: 'Finalizar',
     btn_cancel: 'Cancelar',
     btn_download_video: 'Descargar Video (.webm)',
+    btn_download_mp4: 'Descargar Video (.mp4)',
+    btn_download_webm: 'Descargar Video (.webm)',
     btn_copy_link: 'Copiar Enlace Local',
     btn_link_copied: '¡Enlace copiado!',
     btn_record_new: 'Grabar Nuevo Video',
@@ -45,7 +47,24 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Floating Control Bar
     floating_recording: 'REC',
+    floating_paused: 'PAUSA',
     floating_finish: 'Finalizar',
+    floating_pause: 'Pausar',
+    floating_resume: 'Reanudar',
+    floating_mute: 'Silenciar mic',
+    floating_unmute: 'Activar mic',
+    floating_cam_hide: 'Ocultar cámara',
+    floating_cam_show: 'Mostrar cámara',
+    floating_size: 'Tamaño',
+    floating_discard: 'Descartar',
+    confirm_discard: '¿Descartar esta grabación sin guardar?',
+
+    // Live Camera & Audio Preview
+    camera_preview_title: 'Vista previa de cámara',
+    camera_preview_hint: 'Comprueba tu iluminación y encuadre',
+    camera_preview_error: 'No se pudo acceder a la cámara para la vista previa',
+    vu_meter_label: 'Nivel de entrada',
+    playback_speed: 'Velocidad',
     
     // Recent Recordings
     no_recordings_title: 'No hay grabaciones guardadas',
@@ -73,16 +92,20 @@ export const translations: Record<Language, Record<string, string>> = {
     // Universal Studio Recorder
     universal_studio_title: 'RecordFlow Studio — Grabador Universal',
     universal_studio_subtitle: 'Graba cualquier pantalla, ventana o aplicación del equipo',
-    universal_status_recording: '🔴 Grabando pantalla...',
+    universal_status_recording: 'Grabando pantalla...',
     universal_instructions: 'Puedes minimizar esta pestaña y trabajar en cualquier aplicación de tu equipo (VS Code, terminal, juegos, etc.). Cuando termines, haz clic en Detener o usa el botón \'Dejar de compartir\' de Chrome.',
-    universal_btn_stop_save: '⏹️ Detener y Guardar Grabación',
+    universal_btn_stop_save: 'Detener y Guardar Grabación',
     universal_prompt_title: 'Estudio de Grabación Universal',
     universal_prompt_desc: 'Graba cualquier aplicación, ventana o tu pantalla completa sin restricciones.',
-    universal_btn_start_share: '🚀 Seleccionar Pantalla y Comenzar',
+    universal_btn_start_share: 'Seleccionar Pantalla y Comenzar',
     universal_cancelled_title: 'Selección Cancelada',
     universal_cancelled_desc: 'No se seleccionó ninguna pantalla o se canceló el permiso. Puedes reintentar cuando desees.',
-    universal_btn_retry: '🔄 Reintentar Selección',
+    universal_btn_retry: 'Reintentar Selección',
     open_universal_studio: 'O abrir Estudio Universal para grabar cualquier app',
+    launch_floating_studio: 'Abrir Estudio Flotante en la página',
+    floating_hub_title: 'Estudio Flotante',
+    floating_launcher_tooltip: 'Grabar pantalla con RecordFlow',
+    floating_launcher_hide: 'Ocultar botón flotante',
     
     // Footer Branding
     developed_by: 'Desarrollado por',
@@ -122,6 +145,8 @@ export const translations: Record<Language, Record<string, string>> = {
     btn_finish_recording: 'Finish',
     btn_cancel: 'Cancel',
     btn_download_video: 'Download Video (.webm)',
+    btn_download_mp4: 'Download Video (.mp4)',
+    btn_download_webm: 'Download Video (.webm)',
     btn_copy_link: 'Copy Local Link',
     btn_link_copied: 'Link copied!',
     btn_record_new: 'Record New Video',
@@ -131,7 +156,24 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Floating Control Bar
     floating_recording: 'REC',
+    floating_paused: 'PAUSED',
     floating_finish: 'Finish',
+    floating_pause: 'Pause',
+    floating_resume: 'Resume',
+    floating_mute: 'Mute mic',
+    floating_unmute: 'Unmute mic',
+    floating_cam_hide: 'Hide camera',
+    floating_cam_show: 'Show camera',
+    floating_size: 'Size',
+    floating_discard: 'Discard',
+    confirm_discard: 'Discard this recording without saving?',
+
+    // Live Camera & Audio Preview
+    camera_preview_title: 'Live Camera Preview',
+    camera_preview_hint: 'Check your framing and lighting',
+    camera_preview_error: 'Unable to access camera for preview',
+    vu_meter_label: 'Input level',
+    playback_speed: 'Speed',
     
     // Recent Recordings
     no_recordings_title: 'No saved recordings yet',
@@ -159,16 +201,20 @@ export const translations: Record<Language, Record<string, string>> = {
     // Universal Studio Recorder
     universal_studio_title: 'RecordFlow Studio — Universal Recorder',
     universal_studio_subtitle: 'Record any screen, window, or desktop application',
-    universal_status_recording: '🔴 Recording screen...',
+    universal_status_recording: 'Recording screen...',
     universal_instructions: 'You can minimize this tab and work in any application on your computer (VS Code, terminal, games, etc.). When you\'re done, click Stop or use Chrome\'s \'Stop sharing\' button.',
-    universal_btn_stop_save: '⏹️ Stop and Save Recording',
+    universal_btn_stop_save: 'Stop and Save Recording',
     universal_prompt_title: 'Universal Studio Recorder',
     universal_prompt_desc: 'Record any application, window, or your entire screen without page restrictions.',
-    universal_btn_start_share: '🚀 Select Screen & Start',
+    universal_btn_start_share: 'Select Screen & Start',
     universal_cancelled_title: 'Selection Cancelled',
     universal_cancelled_desc: 'No screen was selected or permission was cancelled. You can retry whenever you are ready.',
-    universal_btn_retry: '🔄 Retry Selection',
+    universal_btn_retry: 'Retry Selection',
     open_universal_studio: 'Or open Universal Studio to record any app',
+    launch_floating_studio: 'Open Floating Studio on page',
+    floating_hub_title: 'Floating Studio',
+    floating_launcher_tooltip: 'Record screen with RecordFlow',
+    floating_launcher_hide: 'Hide floating button',
     
     // Footer Branding
     developed_by: 'Developed by',

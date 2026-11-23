@@ -15,5 +15,8 @@
     "@types/chrome": "^0.3.7",
     "typescript": "^5.9.3",
     "wxt": "^0.20.1"
+  },
+  "dependencies": {
+    "mp4-muxer": "^5.2.2"
   }
 }
