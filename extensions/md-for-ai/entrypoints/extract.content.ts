@@ -1,4 +1,4 @@
-import { pageToMarkdown } from '../src/lib/page-to-markdown';
+import { pageToMarkdownResult } from '../src/lib/page-to-markdown';
 import { estimateTokens } from '../src/lib/token-estimator';
 
 export default defineContentScript({
@@ -12,7 +12,17 @@ export default defineContentScript({
     (window as any).__MDAI_EXTRACT_CONTENT_SCRIPT__ = true;
 
     browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-      if (message && message.type === 'mdai:extract') {
+      if (!message || typeof message !== 'object') {
+        return;
+      }
+
+      // Ping handshake: ensures listener is actively listening
+      if (message.type === 'mdai:ping') {
+        sendResponse({ status: 'ready' });
+        return true;
+      }
+
+      if (message.type === 'mdai:extract') {
         try {
           const options = message.options || {};
           let selectedHtml: string | undefined;
@@ -29,7 +39,7 @@ export default defineContentScript({
             }
           }
 
-          const markdown = pageToMarkdown(document, {
+          const result = pageToMarkdownResult(document, {
             mode: options.mode || 'article',
             includeLinks: options.includeLinks ?? true,
             includeImages: options.includeImages ?? true,
@@ -38,17 +48,18 @@ export default defineContentScript({
             selectedHtml,
           });
 
-          const tokens = estimateTokens(markdown);
+          const tokens = estimateTokens(result.markdown);
           const title = document.title || '';
           const url = window.location.href || '';
           const mode = options.mode || 'article';
 
           sendResponse({
-            markdown,
+            markdown: result.markdown,
             title,
             url,
             tokens,
             mode,
+            isFallback: result.isFallback,
           });
         } catch (error) {
           sendResponse({
@@ -58,9 +69,10 @@ export default defineContentScript({
             url: window.location.href || '',
             tokens: 0,
             mode: message.options?.mode || 'article',
+            isFallback: false,
           });
         }
-        return false;
+        return true;
       }
     });
   },

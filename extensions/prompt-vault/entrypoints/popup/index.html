@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,169 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div id="app"></div>
+    <div class="popup-container">
+      <!-- Header -->
+      <header class="popup-header">
+        <span id="text-app-title" class="app-title">Prompt Vault</span>
+        <div class="header-actions">
+          <button id="btn-help" class="btn-help" type="button" aria-label="Cómo funciona" aria-expanded="false">?</button>
+          <button id="btn-new" class="btn-header-new" type="button" aria-label="Nuevo prompt">+</button>
+          <button id="btn-lang-toggle" class="btn-lang" type="button" aria-label="Cambiar idioma">
+            <span id="lang-current">ES</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Panel de explicación in-app (oculto por defecto) -->
+      <section id="help-panel" class="help-panel" aria-labelledby="text-help-title" hidden>
+        <h2 id="text-help-title" class="help-title">Cómo funciona Prompt Vault</h2>
+        <p id="text-help-what" class="help-text">
+          Guarda tus prompts frecuentes 100% en tu navegador y encuéntralos al instante sin abrir notas externas.
+        </p>
+
+        <div class="help-block">
+          <strong id="text-help-vars-title" class="help-subtitle">¿Para qué sirven las {{variables}}?</strong>
+          <p id="text-help-vars-desc" class="help-text">
+            Si escribes palabras entre llaves dobles, como {{tema}} o {{tono}}, al copiar el prompt se abrirá una ventana rápida para rellenar esos datos antes de pegar.
+          </p>
+          <div class="help-example">
+            <span id="text-help-example-label" class="help-example-label">Ejemplo:</span>
+            <code id="text-help-example-code" class="help-example-code">Redacta un correo {{tono}} para {{persona}} sobre {{asunto}}.</code>
+          </div>
+        </div>
+
+        <div class="help-block">
+          <strong id="text-help-uses-title" class="help-subtitle">Casos de uso:</strong>
+          <p id="text-help-uses-desc" class="help-text">
+            Correos y respuestas, resúmenes de lectura, estudio y explicaciones, agendas de reunión, traducción o revisión de textos y código.
+          </p>
+        </div>
+
+        <div class="help-block">
+          <strong id="text-help-keys-title" class="help-subtitle">Atajos rápidos:</strong>
+          <p id="text-help-keys-desc" class="help-text">
+            Alt+Shift+V abre la ventana · ↑ / ↓ navega · Enter copia · Esc cierra.
+          </p>
+        </div>
+
+        <div class="help-actions">
+          <button id="btn-help-load-examples" class="btn btn-secondary" type="button">Cargar plantillas de ejemplo</button>
+          <button id="btn-help-close" class="btn btn-primary" type="button">Entendido</button>
+        </div>
+      </section>
+
+      <!-- Buscador principal — autofocus al abrir -->
+      <div class="search-wrap">
+        <input
+          id="search-input"
+          class="search-input"
+          type="search"
+          autofocus
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Buscar prompts"
+          placeholder="Buscar prompts..."
+        />
+      </div>
+
+      <!-- Lista de resultados -->
+      <ul id="prompt-list" class="prompt-list" role="listbox" aria-label="Prompts"></ul>
+
+      <!-- Estado vacío (oculto por defecto) -->
+      <div id="empty-state" class="empty-state" hidden>
+        <p id="text-empty-title" class="empty-title">Tu biblioteca local de prompts</p>
+        <p id="text-empty-desc" class="empty-desc">
+          Guarda instrucciones que repites a diario (correos, resúmenes, estudio o trabajo) y cópialas en segundos.
+        </p>
+        <div class="empty-guide">
+          <span id="text-empty-vars-tip" class="empty-tip">
+            Tip: usa {{variable}} en tus plantillas para rellenar datos al copiar.
+          </span>
+        </div>
+        <div class="empty-actions">
+          <button id="btn-create-first" class="btn btn-primary" type="button">Crear primer prompt</button>
+          <button id="btn-load-examples" class="btn btn-secondary" type="button">Cargar plantillas de ejemplo</button>
+        </div>
+      </div>
+
+      <!-- Estado sin resultados de búsqueda (oculto por defecto) -->
+      <div id="no-results" class="no-results" hidden>
+        <p id="text-no-results" class="no-results-text">
+          Sin resultados para "<span id="search-query-display"></span>"
+        </p>
+      </div>
+
+      <!-- Panel de creación/edición (oculto por defecto) -->
+      <div id="editor-panel" class="editor-panel" hidden>
+        <h2 id="editor-title" class="editor-title">Nuevo prompt</h2>
+
+        <div class="field-group">
+          <label id="label-title" for="input-title">Título</label>
+          <input id="input-title" class="text-input" type="text" maxlength="80" autocomplete="off" />
+        </div>
+
+        <div class="field-group">
+          <label id="label-body" for="input-body">Prompt</label>
+          <textarea
+            id="input-body"
+            class="textarea-input"
+            rows="6"
+            spellcheck="false"
+            placeholder="Escribe tu plantilla. Usa {{variable}} para datos que cambian cada vez (ej. {{tema}}, {{tono}})."
+          ></textarea>
+          <span id="body-variables-hint" class="variables-hint" aria-live="polite"></span>
+        </div>
+
+        <div class="field-group">
+          <label id="label-tags" for="input-tags">Etiquetas (separadas por comas)</label>
+          <input
+            id="input-tags"
+            class="text-input"
+            type="text"
+            autocomplete="off"
+            placeholder="correo, resumen, estudio"
+          />
+        </div>
+
+        <div class="editor-actions">
+          <button id="btn-cancel-edit" class="btn btn-secondary" type="button">Cancelar</button>
+          <button id="btn-save" class="btn btn-primary" type="button">Guardar</button>
+        </div>
+      </div>
+
+      <!-- Modal de resolución de variables (oculto por defecto) -->
+      <div id="variables-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="text-variables-title" hidden>
+        <div class="modal-card">
+          <h3 id="text-variables-title" class="modal-title">Completar variables</h3>
+          <div id="variables-fields" class="variables-fields"></div>
+          <div class="modal-actions">
+            <button id="btn-cancel-vars" class="btn btn-secondary" type="button">Cancelar</button>
+            <button id="btn-confirm-vars" class="btn btn-primary" type="button">Copiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notificación de copiado (aria-live) -->
+      <div id="copy-toast" class="toast" role="status" aria-live="polite" hidden>
+        <span id="text-copy-toast">Copiado</span>
+      </div>
+
+      <!-- Footer -->
+      <footer class="popup-footer">
+        <button id="btn-shortcut-settings" class="shortcut-btn" type="button">
+          <span id="text-shortcut-hint" class="shortcut-hint">Atajo: Alt+Shift+V</span>
+        </button>
+        <a
+          class="footer-link"
+          href="https://nival.is-a.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Nicolas Valenzuela (Beto18v)
+        </a>
+      </footer>
+    </div>
+
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

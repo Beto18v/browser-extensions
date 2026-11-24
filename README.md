@@ -29,6 +29,15 @@ Builds and packages all extensions located in `extensions/` into standard store 
 
 ---
 
+## 🛠️ Environment & Compatibility Notes
+
+### Node.js 22.14 Compatibility Patch (`patches/undici@8.13.1.patch`)
+In Node.js 22.14.0, zstd support was partially introduced, but `zlib.createZstdDecompress` was not implemented until Node.js 22.15.0+. When packages such as `undici` (transitive dependency of JSDOM and Vitest) attempt to bind `zlib.createZstdDecompress.bind(zlib)`, an unhandled `TypeError` is thrown.
+
+The repository includes a patch via `pnpm-workspace.yaml` (`patchedDependencies` -> `patches/undici@8.13.1.patch`) that guards against `undefined` for `createZstdDecompress`. This ensures reliable local execution of unit tests and DOM simulations on Node 22.14 environments.
+
+---
+
 ## 👤 Author
 
 **Nicolas Valenzuela** — *AI & Full-Stack Software Engineer*  

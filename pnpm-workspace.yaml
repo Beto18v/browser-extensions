@@ -1,5 +1,7 @@
 packages:
   - 'extensions/*'
   - 'packages/*'
+allowBuilds:
+  sharp: set this to true or false
 patchedDependencies:
   undici@8.13.1: patches/undici@8.13.1.patch

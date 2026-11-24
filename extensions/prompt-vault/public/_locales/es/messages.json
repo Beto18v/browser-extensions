@@ -1,0 +1,6 @@
+{
+  "pvExtName": { "message": "Prompt Vault" },
+  "pvExtShortName": { "message": "Prompt Vault" },
+  "pvExtDescription": { "message": "Tu biblioteca de prompts para IA, local y sin servidores." },
+  "pvCommandOpen": { "message": "Abrir Prompt Vault" }
+}

@@ -18,7 +18,32 @@
         </button>
       </header>
 
-      <div id="error-banner" class="error-banner" role="alert" hidden></div>
+      <p class="app-description" id="text-app-description">
+        Convierte esta página en Markdown limpio para pegarla en tu asistente de IA
+      </p>
+
+      <div class="onboarding-banner" id="onboarding-banner" hidden>
+        <span class="onboarding-text" id="text-onboarding-steps">1) Elige qué extraer · 2) Revisa el resultado · 3) Copia</span>
+        <button type="button" class="btn-dismiss" id="btn-dismiss-onboarding" aria-label="Entendido">
+          <span id="text-onboarding-dismiss">Entendido</span>
+        </button>
+      </div>
+
+      <div class="page-context" id="page-context" hidden>
+        <span class="page-domain" id="page-domain"></span>
+        <span class="page-title" id="page-title"></span>
+      </div>
+
+      <div id="fallback-banner" class="fallback-banner" role="status" hidden>
+        <span id="text-fallback-notice">Esta página no parece un artículo; se usó la página completa.</span>
+      </div>
+
+      <div id="error-banner" class="error-banner" role="alert" hidden>
+        <span id="error-message"></span>
+        <button type="button" id="btn-retry" class="btn-retry">
+          <span id="text-btn-retry">Reintentar</span>
+        </button>
+      </div>
 
       <main class="popup-main">
         <section class="section-mode">
@@ -117,14 +142,16 @@
           <button type="button" id="btn-trim" class="btn btn-secondary" disabled>
             <span id="text-btn-trim">Recortar para que quepa</span>
           </button>
-          <button type="button" id="btn-copy" class="btn btn-primary">
+          <button type="button" id="btn-copy" class="btn btn-primary" disabled>
             <span id="text-btn-copy">Copiar</span>
           </button>
         </section>
       </main>
 
       <footer class="popup-footer">
-        <span class="shortcut-hint" id="text-shortcut-hint">Atajo: Alt+Shift+M</span>
+        <button type="button" id="btn-shortcut-settings" class="shortcut-btn" title="Configurar atajo de teclado">
+          <span id="text-shortcut-hint">Atajo: Alt+Shift+M</span>
+        </button>
         <a href="https://nival.is-a.dev" target="_blank" rel="noopener noreferrer" class="footer-link">
           Nicolas Valenzuela (Beto18v)
         </a>

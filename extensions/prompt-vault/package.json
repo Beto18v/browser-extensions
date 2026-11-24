@@ -1,6 +1,6 @@
 {
   "name": "prompt-vault",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "author": "Nicolas Valenzuela (Beto18v)",
@@ -9,13 +9,19 @@
     "build": "wxt build",
     "zip": "wxt zip",
     "compile": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "wxt prepare"
   },
   "dependencies": {
     "@browser-extensions/shared": "workspace:*"
   },
   "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "@wxt-dev/auto-icons": "^2.0.0",
+    "jsdom": "^31.0.1",
     "typescript": "^5.7.3",
+    "vitest": "^5.1.1",
     "wxt": "^0.21.5"
   }
 }

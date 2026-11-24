@@ -23,6 +23,11 @@ export interface ExtractedMetadata {
   source?: string;
 }
 
+export interface PageToMarkdownResult {
+  markdown: string;
+  isFallback: boolean;
+}
+
 /**
  * Extracts programming language from a code/pre element.
  * Checks class names (e.g. language-ts, lang-python, highlight-source-js) and data attributes.
@@ -185,13 +190,13 @@ function sanitizeContainer(element: Element): void {
 }
 
 /**
- * Converts a DOM Document to Markdown formatted for LLMs.
+ * Converts a DOM Document to Markdown formatted for LLMs with fallback tracking.
  *
  * @param doc - Browser or JSDOM Document
  * @param options - Configuration options for mode, links, images, and metadata
- * @returns Clean Markdown string
+ * @returns Clean Markdown string and whether fallback was used
  */
-export function pageToMarkdown(doc: Document, options: PageToMarkdownOptions = {}): string {
+export function pageToMarkdownResult(doc: Document, options: PageToMarkdownOptions = {}): PageToMarkdownResult {
   const {
     mode = 'article',
     includeLinks = true,
@@ -203,6 +208,7 @@ export function pageToMarkdown(doc: Document, options: PageToMarkdownOptions = {
 
   let htmlContent = '';
   let metadata: ExtractedMetadata = extractMetaTags(doc);
+  let isFallback = false;
 
   if (mode === 'article') {
     // Readability mutates the DOM, so clone before parsing
@@ -211,7 +217,7 @@ export function pageToMarkdown(doc: Document, options: PageToMarkdownOptions = {
       const reader = new Readability(clonedDoc, { keepClasses: true });
       const article = reader.parse();
 
-      if (article && article.content) {
+      if (article && article.content && article.content.trim()) {
         htmlContent = article.content;
         if (article.title) metadata.title = article.title.trim();
         if (article.byline) metadata.author = article.byline.trim();
@@ -219,11 +225,25 @@ export function pageToMarkdown(doc: Document, options: PageToMarkdownOptions = {
         if (article.siteName) metadata.siteName = article.siteName.trim();
         if (article.publishedTime) metadata.published = article.publishedTime.trim();
       } else {
-        // Fallback to full body if Readability finds no article
-        htmlContent = doc.body ? doc.body.innerHTML : '';
+        // Fallback to sanitized full body if Readability finds no article
+        if (doc.body) {
+          const clonedBody = doc.body.cloneNode(true) as HTMLElement;
+          sanitizeContainer(clonedBody);
+          htmlContent = clonedBody.innerHTML;
+        } else {
+          htmlContent = '';
+        }
+        isFallback = true;
       }
     } catch {
-      htmlContent = doc.body ? doc.body.innerHTML : '';
+      if (doc.body) {
+        const clonedBody = doc.body.cloneNode(true) as HTMLElement;
+        sanitizeContainer(clonedBody);
+        htmlContent = clonedBody.innerHTML;
+      } else {
+        htmlContent = '';
+      }
+      isFallback = true;
     }
   } else if (mode === 'selection') {
     let resolvedSelection = selectedHtml.trim();
@@ -245,8 +265,15 @@ export function pageToMarkdown(doc: Document, options: PageToMarkdownOptions = {
     if (resolvedSelection) {
       htmlContent = resolvedSelection;
     } else {
-      // Fallback to body or article if selection is empty
-      htmlContent = doc.body ? doc.body.innerHTML : '';
+      // Fallback to sanitized body if selection is empty
+      if (doc.body) {
+        const clonedBody = doc.body.cloneNode(true) as HTMLElement;
+        sanitizeContainer(clonedBody);
+        htmlContent = clonedBody.innerHTML;
+      } else {
+        htmlContent = '';
+      }
+      isFallback = true;
     }
   } else {
     // 'full' mode: entire document body cleaned of scripts/styles
@@ -267,8 +294,21 @@ export function pageToMarkdown(doc: Document, options: PageToMarkdownOptions = {
   // Prepend metadata frontmatter if enabled
   if (includeMeta) {
     const frontmatter = buildFrontmatter(metadata);
-    return `${frontmatter}${cleanMarkdown}`.trim();
+    return {
+      markdown: `${frontmatter}${cleanMarkdown}`.trim(),
+      isFallback,
+    };
   }
 
-  return cleanMarkdown;
+  return {
+    markdown: cleanMarkdown,
+    isFallback,
+  };
+}
+
+/**
+ * Converts a DOM Document to Markdown formatted for LLMs.
+ */
+export function pageToMarkdown(doc: Document, options: PageToMarkdownOptions = {}): string {
+  return pageToMarkdownResult(doc, options).markdown;
 }

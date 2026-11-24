@@ -17,12 +17,43 @@ import {
   DEFAULT_OPTIONS,
   isRestrictedUrl,
 } from '../../src/lib/options';
+import { applyUIState, type UIState, type UIStateElements } from '../../src/lib/ui-state';
+import { executeExtractProtocol } from '../../src/lib/protocol';
+
+const STORAGE_ONBOARDING_KEY = 'mdai_onboarding_dismissed';
 
 // Application state
 let currentOptions: StoredOptions = { ...DEFAULT_OPTIONS };
 let fullExtractedMarkdown = '';
 let activeTabId: number | null = null;
 let activeTabUrl = '';
+let activeTabTitle = '';
+
+/**
+ * Checks if current user platform is macOS.
+ */
+function isMacOS(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const platform = (navigator as any).userAgentData?.platform || navigator.platform || navigator.userAgent || '';
+  return /Mac/i.test(platform);
+}
+
+/**
+ * Gathers references to state-controlled DOM elements.
+ */
+function getUIElements(): UIStateElements {
+  return {
+    loadingIndicator: document.getElementById('loading-indicator'),
+    emptyState: document.getElementById('empty-state'),
+    errorBanner: document.getElementById('error-banner'),
+    errorMessage: document.getElementById('error-message'),
+    btnCopy: document.getElementById('btn-copy') as HTMLButtonElement | null,
+    btnTrim: document.getElementById('btn-trim') as HTMLButtonElement | null,
+    btnRetry: document.getElementById('btn-retry') as HTMLButtonElement | null,
+    fallbackBanner: document.getElementById('fallback-banner'),
+    previewTextarea: document.getElementById('markdown-preview') as HTMLTextAreaElement | null,
+  };
+}
 
 /**
  * Updates all UI text labels according to active locale.
@@ -39,6 +70,9 @@ function updateLanguageUI(): void {
 
   setElText('text-app-title', 'app_name');
   setElText('text-app-tagline', 'app_tagline');
+  setElText('text-app-description', 'app_description');
+  setElText('text-onboarding-steps', 'onboarding_steps');
+  setElText('text-onboarding-dismiss', 'onboarding_dismiss');
   setElText('text-mode-legend', 'mode_label');
   setElText('text-mode-article', 'mode_article');
   setElText('text-mode-full', 'mode_full');
@@ -53,7 +87,14 @@ function updateLanguageUI(): void {
   setElText('text-empty-desc', 'empty_state_desc');
   setElText('text-btn-trim', 'btn_trim');
   setElText('text-btn-copy', 'btn_copy');
-  setElText('text-shortcut-hint', 'shortcut_hint');
+  setElText('text-btn-retry', 'btn_retry');
+  setElText('text-fallback-notice', 'notice_fallback_full');
+
+  // Shortcut localized hint (Mac vs PC)
+  const shortcutHint = document.getElementById('text-shortcut-hint');
+  if (shortcutHint) {
+    shortcutHint.textContent = isMacOS() ? t('shortcut_hint_mac') : t('shortcut_hint');
+  }
 
   const previewTextarea = document.getElementById('markdown-preview') as HTMLTextAreaElement | null;
   if (previewTextarea) {
@@ -64,47 +105,39 @@ function updateLanguageUI(): void {
 }
 
 /**
- * Displays error banner with accessible message.
+ * Renders the context header with domain and page title.
  */
-function showError(message: string): void {
-  const errorBanner = document.getElementById('error-banner') as HTMLDivElement | null;
-  const loadingIndicator = document.getElementById('loading-indicator') as HTMLDivElement | null;
-  const emptyState = document.getElementById('empty-state') as HTMLDivElement | null;
-  const btnCopy = document.getElementById('btn-copy') as HTMLButtonElement | null;
-  const btnTrim = document.getElementById('btn-trim') as HTMLButtonElement | null;
+function renderPageContext(url: string, title: string): void {
+  const contextEl = document.getElementById('page-context');
+  const domainEl = document.getElementById('page-domain');
+  const titleEl = document.getElementById('page-title');
 
-  if (errorBanner) {
-    errorBanner.textContent = message;
-    errorBanner.hidden = false;
-  }
-  if (loadingIndicator) loadingIndicator.hidden = true;
-  if (emptyState) emptyState.hidden = true;
-  if (btnCopy) btnCopy.disabled = true;
-  if (btnTrim) btnTrim.disabled = true;
-}
+  if (!contextEl || !url) return;
 
-/**
- * Clears error banner.
- */
-function clearError(): void {
-  const errorBanner = document.getElementById('error-banner') as HTMLDivElement | null;
-  if (errorBanner) {
-    errorBanner.hidden = true;
-    errorBanner.textContent = '';
+  try {
+    const parsed = new URL(url);
+    if (domainEl) domainEl.textContent = parsed.hostname;
+    if (titleEl) titleEl.textContent = title || url;
+    contextEl.hidden = false;
+  } catch {
+    contextEl.hidden = true;
   }
 }
 
 /**
  * Updates limit chip status badges ("Cabe" / "Excede") and active selection.
+ * Guaranteed to compute tokens from the exact final markdown string.
  */
-function updateChipsStatus(): void {
+function updateChipsStatus(explicitMarkdown?: string): void {
   const previewTextarea = document.getElementById('markdown-preview') as HTMLTextAreaElement | null;
   const tokenCounter = document.getElementById('token-counter') as HTMLSpanElement | null;
   const btnTrim = document.getElementById('btn-trim') as HTMLButtonElement | null;
   const btnCopy = document.getElementById('btn-copy') as HTMLButtonElement | null;
   const chips = document.querySelectorAll<HTMLButtonElement>('.chip');
 
-  const currentTokens = previewTextarea ? estimateTokens(previewTextarea.value) : 0;
+  const textToEstimate = explicitMarkdown !== undefined ? explicitMarkdown : (previewTextarea ? previewTextarea.value : '');
+  const currentTokens = textToEstimate ? estimateTokens(textToEstimate) : 0;
+
   if (tokenCounter) {
     tokenCounter.textContent = t('tokens_approx', { count: currentTokens });
   }
@@ -124,7 +157,7 @@ function updateChipsStatus(): void {
     chip.setAttribute('aria-pressed', String(isActive));
   });
 
-  const hasContent = Boolean(previewTextarea?.value.trim());
+  const hasContent = Boolean(textToEstimate.trim());
   if (btnTrim) {
     btnTrim.disabled = !hasContent || currentTokens <= currentOptions.selectedLimit;
   }
@@ -134,85 +167,111 @@ function updateChipsStatus(): void {
 }
 
 /**
- * Injects extract content script and requests page markdown.
+ * Injects extract content script and requests page markdown using the robust protocol.
  */
 async function performExtraction(): Promise<void> {
-  clearError();
-
-  const loadingIndicator = document.getElementById('loading-indicator') as HTMLDivElement | null;
-  const emptyState = document.getElementById('empty-state') as HTMLDivElement | null;
-  const previewTextarea = document.getElementById('markdown-preview') as HTMLTextAreaElement | null;
-  const btnCopy = document.getElementById('btn-copy') as HTMLButtonElement | null;
-  const btnTrim = document.getElementById('btn-trim') as HTMLButtonElement | null;
+  const elements = getUIElements();
 
   if (!activeTabId) {
-    showError(t('error_no_tab'));
+    applyUIState('error', elements, {
+      errorMessage: t('error_no_tab'),
+      allowRetry: false,
+    });
     return;
   }
 
   if (isRestrictedUrl(activeTabUrl)) {
-    showError(t('error_restricted'));
-    return;
-  }
-
-  if (loadingIndicator) loadingIndicator.hidden = false;
-  if (emptyState) emptyState.hidden = true;
-  if (btnCopy) btnCopy.disabled = true;
-  if (btnTrim) btnTrim.disabled = true;
-
-  try {
-    // Inject runtime content script in active tab
-    await browser.scripting.executeScript({
-      target: { tabId: activeTabId },
-      files: ['/content-scripts/extract.js'],
+    applyUIState('error', elements, {
+      errorMessage: t('error_restricted'),
+      allowRetry: false,
     });
-  } catch (_err) {
-    if (loadingIndicator) loadingIndicator.hidden = true;
-    showError(t('error_restricted'));
     return;
   }
 
+  // Set explicit loading state
+  applyUIState('loading', elements);
+
   try {
-    const response = await browser.tabs.sendMessage(activeTabId, {
-      type: 'mdai:extract',
-      options: {
+    // 1. Inject runtime content script in active tab
+    try {
+      await browser.scripting.executeScript({
+        target: { tabId: activeTabId },
+        files: ['/content-scripts/extract.js'],
+      });
+    } catch (_err) {
+      applyUIState('error', elements, {
+        errorMessage: t('error_restricted'),
+        allowRetry: false,
+      });
+      return;
+    }
+
+    // 2. Execute extraction protocol (ping with retries + 8s request timeout)
+    const sender = (msg: unknown) => browser.tabs.sendMessage(activeTabId!, msg);
+    const response = await executeExtractProtocol(
+      sender,
+      {
         mode: currentOptions.mode,
         includeLinks: currentOptions.includeLinks,
         imagesAsAlt: currentOptions.imagesAsAlt,
         includeMeta: currentOptions.includeMeta,
       },
-    });
+      8000
+    );
 
-    if (loadingIndicator) loadingIndicator.hidden = true;
+    fullExtractedMarkdown = response.markdown || '';
 
-    if (response && response.error) {
-      showError(t('error_extract_failed'));
+    // Handle Selection mode when no text was selected
+    if (currentOptions.mode === 'selection' && !fullExtractedMarkdown.trim()) {
+      applyUIState('error', elements, {
+        errorMessage: t('error_no_selection'),
+        allowRetry: true,
+      });
+      if (elements.previewTextarea) elements.previewTextarea.value = '';
+      updateChipsStatus('');
       return;
     }
 
-    if (response && typeof response.markdown === 'string') {
-      fullExtractedMarkdown = response.markdown;
-
-      if (!fullExtractedMarkdown.trim()) {
-        if (emptyState) emptyState.hidden = false;
-        if (previewTextarea) previewTextarea.value = '';
-      } else {
-        if (emptyState) emptyState.hidden = true;
-        if (previewTextarea) previewTextarea.value = fullExtractedMarkdown;
-
-        // Auto-copy on open if option enabled
-        if (currentOptions.copyOnOpen) {
-          triggerCopy();
-        }
-      }
-
-      updateChipsStatus();
-    } else {
-      if (emptyState) emptyState.hidden = false;
+    if (!fullExtractedMarkdown.trim()) {
+      applyUIState('empty', elements);
+      updateChipsStatus('');
+      return;
     }
-  } catch (_err) {
-    if (loadingIndicator) loadingIndicator.hidden = true;
-    showError(t('error_extract_failed'));
+
+    // Ready with extracted content
+    if (elements.previewTextarea) {
+      elements.previewTextarea.value = fullExtractedMarkdown;
+    }
+
+    const tokenCount = estimateTokens(fullExtractedMarkdown);
+    const canTrim = tokenCount > currentOptions.selectedLimit;
+
+    applyUIState('ready', elements, {
+      hasContent: true,
+      canTrim,
+      isFallback: Boolean(response.isFallback && currentOptions.mode === 'article'),
+    });
+
+    updateChipsStatus(fullExtractedMarkdown);
+
+    // Auto-copy on open if option enabled
+    if (currentOptions.copyOnOpen) {
+      triggerCopy();
+    }
+  } catch (err) {
+    const errorMsg = err instanceof Error && err.message === 'TIMEOUT'
+      ? t('error_timeout')
+      : t('error_extract_failed');
+
+    applyUIState('error', elements, {
+      errorMessage: errorMsg,
+      allowRetry: true,
+    });
+  } finally {
+    // Safety guard: loading indicator is strictly disabled
+    if (elements.loadingIndicator) {
+      elements.loadingIndicator.hidden = true;
+    }
   }
 }
 
@@ -249,6 +308,32 @@ async function saveOptions(): Promise<void> {
   } catch (err) {
     console.error('Failed to save options:', err);
   }
+}
+
+/**
+ * Initializes onboarding banner visibility based on storage.
+ */
+async function initOnboarding(): Promise<void> {
+  const banner = document.getElementById('onboarding-banner');
+  const btnDismiss = document.getElementById('btn-dismiss-onboarding');
+
+  try {
+    const stored = (await browser.storage.local.get(STORAGE_ONBOARDING_KEY)) as Record<string, unknown>;
+    if (!stored[STORAGE_ONBOARDING_KEY] && banner) {
+      banner.hidden = false;
+    }
+  } catch {
+    if (banner) banner.hidden = false;
+  }
+
+  btnDismiss?.addEventListener('click', async () => {
+    if (banner) banner.hidden = true;
+    try {
+      await browser.storage.local.set({ [STORAGE_ONBOARDING_KEY]: true });
+    } catch (err) {
+      console.warn('Failed to persist onboarding dismissal:', err);
+    }
+  });
 }
 
 /**
@@ -296,20 +381,29 @@ async function init(): Promise<void> {
   if (toggleCopyOnOpen) toggleCopyOnOpen.checked = currentOptions.copyOnOpen;
 
   updateLanguageUI();
+  initOnboarding();
   bindEvents();
 
-  // 4. Query active tab
+  // 4. Query active tab and start extraction
   try {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
     if (tab && tab.id) {
       activeTabId = tab.id;
       activeTabUrl = tab.url || '';
+      activeTabTitle = tab.title || '';
+      renderPageContext(activeTabUrl, activeTabTitle);
       await performExtraction();
     } else {
-      showError(t('error_no_tab'));
+      applyUIState('error', getUIElements(), {
+        errorMessage: t('error_no_tab'),
+        allowRetry: false,
+      });
     }
   } catch {
-    showError(t('error_no_tab'));
+    applyUIState('error', getUIElements(), {
+      errorMessage: t('error_no_tab'),
+      allowRetry: false,
+    });
   }
 }
 
@@ -372,11 +466,25 @@ function bindEvents(): void {
     const previewTextarea = document.getElementById('markdown-preview') as HTMLTextAreaElement | null;
     const trimmed = trimToTokens(fullExtractedMarkdown, currentOptions.selectedLimit);
     if (previewTextarea) previewTextarea.value = trimmed;
-    updateChipsStatus();
+    updateChipsStatus(trimmed);
   });
 
   const btnCopy = document.getElementById('btn-copy') as HTMLButtonElement | null;
   btnCopy?.addEventListener('click', triggerCopy);
+
+  const btnRetry = document.getElementById('btn-retry') as HTMLButtonElement | null;
+  btnRetry?.addEventListener('click', () => {
+    performExtraction();
+  });
+
+  const btnShortcutSettings = document.getElementById('btn-shortcut-settings') as HTMLButtonElement | null;
+  btnShortcutSettings?.addEventListener('click', async () => {
+    try {
+      await browser.tabs.create({ url: 'chrome://extensions/shortcuts' });
+    } catch (err) {
+      console.warn('Could not open shortcuts settings:', err);
+    }
+  });
 
   const btnLangToggle = document.getElementById('btn-lang-toggle') as HTMLButtonElement | null;
   btnLangToggle?.addEventListener('click', async () => {
