@@ -11,6 +11,7 @@
       <header class="popup-header">
         <div class="brand">
           <span class="app-title" id="text-app-title">MD for AI</span>
+          <span class="app-tagline" id="text-app-tagline">Conversor Web a Markdown</span>
         </div>
         <button type="button" id="btn-lang-toggle" class="btn-lang" aria-label="Cambiar idioma">
           <span id="lang-current">ES</span>
@@ -43,24 +44,23 @@
         <section class="section-toggles">
           <label class="toggle-control" for="toggle-links">
             <input type="checkbox" id="toggle-links" checked />
-            <span class="toggle-track">
-              <span class="toggle-thumb"></span>
-            </span>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
             <span class="toggle-label" id="text-toggle-links">Incluir enlaces</span>
           </label>
           <label class="toggle-control" for="toggle-images-alt">
             <input type="checkbox" id="toggle-images-alt" checked />
-            <span class="toggle-track">
-              <span class="toggle-thumb"></span>
-            </span>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
             <span class="toggle-label" id="text-toggle-images-alt">Imágenes como texto alt</span>
           </label>
           <label class="toggle-control" for="toggle-meta">
             <input type="checkbox" id="toggle-meta" checked />
-            <span class="toggle-track">
-              <span class="toggle-thumb"></span>
-            </span>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
             <span class="toggle-label" id="text-toggle-meta">Encabezado con título/URL/fecha</span>
+          </label>
+          <label class="toggle-control" for="toggle-copy-on-open">
+            <input type="checkbox" id="toggle-copy-on-open" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label" id="text-toggle-copy-on-open">Copiar al abrir</span>
           </label>
         </section>
 
@@ -69,14 +69,27 @@
             <label for="markdown-preview" class="preview-label" id="text-preview-label">Vista previa Markdown</label>
             <span id="token-counter" class="token-counter" aria-live="polite">≈ 0 tokens</span>
           </div>
-          <textarea
-            id="markdown-preview"
-            class="markdown-textarea"
-            readonly
-            rows="8"
-            spellcheck="false"
-            aria-label="Vista previa Markdown"
-          ></textarea>
+
+          <div class="preview-wrapper">
+            <div id="loading-indicator" class="loading-indicator" hidden>
+              <div class="loading-spinner"></div>
+              <span id="text-loading-status">Extrayendo contenido de la página...</span>
+            </div>
+
+            <div id="empty-state" class="empty-state" hidden>
+              <p class="empty-title" id="text-empty-title">Sin contenido legible</p>
+              <p class="empty-desc" id="text-empty-desc">No se detectó contenido para extraer en la página o selección activa.</p>
+            </div>
+
+            <textarea
+              id="markdown-preview"
+              class="markdown-textarea"
+              readonly
+              rows="8"
+              spellcheck="false"
+              aria-label="Vista previa Markdown"
+            ></textarea>
+          </div>
         </section>
 
         <section class="section-limits">
@@ -111,6 +124,7 @@
       </main>
 
       <footer class="popup-footer">
+        <span class="shortcut-hint" id="text-shortcut-hint">Atajo: Alt+Shift+M</span>
         <a href="https://nival.is-a.dev" target="_blank" rel="noopener noreferrer" class="footer-link">
           Nicolas Valenzuela (Beto18v)
         </a>

@@ -1,0 +1,18 @@
+{
+  "extName": {
+    "message": "MD for AI - Conversor Web a Markdown",
+    "description": "Nombre de la extension"
+  },
+  "extShortName": {
+    "message": "MD for AI",
+    "description": "Nombre corto de la extension"
+  },
+  "extDescription": {
+    "message": "Convierte articulos y paginas web a Markdown limpio y estructurado para prompts y contextos de IA. 100% local y privado.",
+    "description": "Descripcion de la extension"
+  },
+  "commandOpen": {
+    "message": "Abrir MD for AI y convertir la pagina activa",
+    "description": "Descripcion del atajo de teclado"
+  }
+}

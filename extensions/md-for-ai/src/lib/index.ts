@@ -12,3 +12,12 @@ export {
   getUnclosedFence,
   TRIM_SUFFIX,
 } from './trim-to-tokens';
+
+export {
+  STORAGE_OPTIONS_KEY,
+  LIMITS,
+  type TokenLimit,
+  type StoredOptions,
+  DEFAULT_OPTIONS,
+  isRestrictedUrl,
+} from './options';

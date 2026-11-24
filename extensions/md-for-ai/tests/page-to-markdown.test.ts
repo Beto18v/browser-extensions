@@ -87,6 +87,23 @@ describe('pageToMarkdown', () => {
     expect(withoutImages).not.toContain('![Architecture Diagram]');
     expect(withoutImages).not.toContain('![Interface Screenshot]');
     expect(withoutImages).toContain('Figure 1: High level architecture overview.');
+
+    const imagesAsAlt = pageToMarkdown(doc, { imagesAsAlt: true, includeMeta: false });
+    expect(imagesAsAlt).not.toContain('![Architecture Diagram]');
+    expect(imagesAsAlt).toContain('[Architecture Diagram]');
+    expect(imagesAsAlt).toContain('[Interface Screenshot]');
+  });
+
+  it('supports explicit selectedHtml in selection mode', () => {
+    const doc = loadFixtureDocument('article.html');
+    const md = pageToMarkdown(doc, {
+      mode: 'selection',
+      selectedHtml: '<p>Custom <strong>user selection</strong> block.</p>',
+      includeMeta: false,
+    });
+
+    expect(md).toContain('Custom **user selection** block.');
+    expect(md).not.toContain('Understanding Modern AI Architectures');
   });
 
   it('supports mode="full" to convert the entire body', () => {

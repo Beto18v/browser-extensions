@@ -86,6 +86,30 @@ Additional closing remarks after the code block.`;
     expect(result).toMatch(/```\s*\n\n\[\.\.\.recortado\]$/);
   });
 
+  it('correctly handles tilde code blocks (~~~)', () => {
+    const textWithTildes = `# Tilde Block
+~~~python
+import sys
+print(sys.version)
+for i in range(100):
+    print("Looping line", i)
+~~~`;
+    const tokens = estimateTokens(textWithTildes);
+    const result = trimToTokens(textWithTildes, Math.floor(tokens * 0.5));
+
+    expect(result).toContain(TRIM_SUFFIX);
+    expect(getUnclosedFence(result.replace(TRIM_SUFFIX, ''))).toBeNull();
+    expect(result).toMatch(/~~~\s*\n\n\[\.\.\.recortado\]$/);
+  });
+
+  it('handles Windows CRLF line endings properly', () => {
+    const crlfText = "First paragraph.\r\n\r\nSecond paragraph with multiple lines.\r\nLine two.\r\n\r\nThird paragraph.";
+    const result = trimToTokens(crlfText, 10);
+
+    expect(result).toContain(TRIM_SUFFIX);
+    expect(result.endsWith(TRIM_SUFFIX)).toBe(true);
+  });
+
   it('handles small or zero limits safely', () => {
     const text = 'Some markdown text with words.';
     expect(trimToTokens(text, 0)).toBe(TRIM_SUFFIX);
