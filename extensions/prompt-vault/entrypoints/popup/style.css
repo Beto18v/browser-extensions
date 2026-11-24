@@ -23,7 +23,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme='dark']) {
     --bg: #ffffff;
     --surface: #f9fafb;
     --surface-hover: #f3f4f6;
@@ -42,6 +42,46 @@
 
     color-scheme: light;
   }
+}
+
+:root[data-theme='light'] {
+  --bg: #ffffff;
+  --surface: #f9fafb;
+  --surface-hover: #f3f4f6;
+  --border: #e5e7eb;
+  --border-focus: #4f46e5;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #111215;
+  --surface: #18191f;
+  --surface-hover: #22232b;
+  --border: #2e303d;
+  --border-focus: #6366f1;
+  --text: #f3f4f6;
+  --text-muted: #9ca3af;
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --success: #22c55e;
+  --success-bg: #14532d;
+  --warning: #f59e0b;
+  --warning-bg: #451a03;
+  --danger: #ef4444;
+  --danger-bg: #2d1215;
+
+  color-scheme: dark;
 }
 
 * {
@@ -99,6 +139,7 @@ body {
 }
 
 .btn-help,
+.btn-theme,
 .btn-lang {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -109,10 +150,19 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+}
+
+.btn-theme {
+  padding: 3px 6px;
 }
 
 .btn-help:hover,
 .btn-help.active,
+.btn-theme:hover,
 .btn-lang:hover {
   background: var(--surface-hover);
   color: var(--text);
@@ -141,6 +191,7 @@ body {
 }
 
 .btn-help:focus-visible,
+.btn-theme:focus-visible,
 .btn-header-new:focus-visible,
 .btn-lang:focus-visible {
   outline: 2px solid var(--border-focus);
@@ -323,9 +374,28 @@ body {
   outline-offset: 1px;
 }
 
+.prompt-actions .btn-pin,
+.prompt-actions .btn-edit,
+.prompt-actions .btn-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 5px;
+  min-height: 20px;
+}
+
+.prompt-actions .btn-pin svg {
+  transform: rotate(35deg);
+  transition: transform 0.15s ease;
+}
+
 .prompt-actions .btn-pin.active {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.prompt-actions .btn-pin.active svg {
+  transform: rotate(0deg);
 }
 
 .prompt-actions .btn-delete.confirming {

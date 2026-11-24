@@ -84,6 +84,9 @@ export const TRANSLATIONS = {
     pv_help_keys_title: 'Atajos rápidos:',
     pv_help_keys_desc: 'Alt+Shift+V abre la ventana · ↑ / ↓ navega · Enter copia · Esc cierra.',
     pv_help_close: 'Entendido',
+    pv_theme_toggle: 'Cambiar tema',
+    pv_theme_light: 'Cambiar a tema claro',
+    pv_theme_dark: 'Cambiar a tema oscuro',
   },
   en: {
     app_name: 'MD for AI',
@@ -166,6 +169,9 @@ export const TRANSLATIONS = {
     pv_help_keys_title: 'Quick shortcuts:',
     pv_help_keys_desc: 'Alt+Shift+V opens popup · ↑ / ↓ navigate · Enter copies · Esc closes.',
     pv_help_close: 'Got it',
+    pv_theme_toggle: 'Toggle theme',
+    pv_theme_light: 'Switch to light theme',
+    pv_theme_dark: 'Switch to dark theme',
   },
 } as const;
 

@@ -14,8 +14,10 @@ import {
   incrementUsage,
   loadPrompts,
   savePrompts,
+  STORAGE_THEME_KEY,
   updatePrompt,
   type Prompt,
+  type ThemePreference,
 } from '../../src/lib/storage';
 import { searchPrompts } from '../../src/lib/search';
 import {
@@ -28,6 +30,9 @@ import { extractVariables, hasVariables, resolveVariables } from '../../src/lib/
 // DOM Elements
 const textAppTitle = document.getElementById('text-app-title') as HTMLSpanElement;
 const btnHelp = document.getElementById('btn-help') as HTMLButtonElement;
+const btnThemeToggle = document.getElementById('btn-theme-toggle') as HTMLButtonElement;
+const iconThemeSun = document.getElementById('icon-theme-sun') as unknown as SVGSVGElement;
+const iconThemeMoon = document.getElementById('icon-theme-moon') as unknown as SVGSVGElement;
 const btnNew = document.getElementById('btn-new') as HTMLButtonElement;
 const btnLangToggle = document.getElementById('btn-lang-toggle') as HTMLButtonElement;
 const langCurrent = document.getElementById('lang-current') as HTMLSpanElement;
@@ -92,6 +97,27 @@ let pendingVarPrompt: Prompt | null = null;
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 const deleteTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
+function getEffectiveTheme(): ThemePreference {
+  const explicit = document.documentElement.dataset.theme;
+  if (explicit === 'light' || explicit === 'dark') {
+    return explicit;
+  }
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  return 'dark';
+}
+
+function updateThemeButtonUI(): void {
+  const current = getEffectiveTheme();
+  const isDark = current === 'dark';
+  iconThemeSun.toggleAttribute('hidden', !isDark);
+  iconThemeMoon.toggleAttribute('hidden', isDark);
+  const label = isDark ? t('pv_theme_light') : t('pv_theme_dark');
+  btnThemeToggle.setAttribute('aria-label', label);
+  btnThemeToggle.title = label;
+}
+
 function isMacOS(): boolean {
   return (
     typeof navigator !== 'undefined' &&
@@ -147,6 +173,7 @@ function applyTranslations(): void {
   textCopyToast.textContent = t('pv_btn_copied');
 
   textShortcutHint.textContent = isMacOS() ? t('pv_shortcut_hint_mac') : t('pv_shortcut_hint');
+  updateThemeButtonUI();
   updateBodyVariablesHint();
 }
 
@@ -444,7 +471,9 @@ function renderList(): void {
     pinBtn.setAttribute('aria-label', pinLabel);
     pinBtn.setAttribute('aria-pressed', prompt.pinned ? 'true' : 'false');
     pinBtn.title = pinLabel;
-    pinBtn.textContent = '|';
+    pinBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="${
+      prompt.pinned ? 'currentColor' : 'none'
+    }" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>`;
     pinBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       void (async () => {
@@ -459,18 +488,22 @@ function renderList(): void {
     editBtn.className = 'btn-edit';
     editBtn.setAttribute('aria-label', t('pv_btn_edit'));
     editBtn.title = t('pv_btn_edit');
-    editBtn.textContent = '...';
+    editBtn.innerHTML =
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
     editBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       openEditor(prompt);
     });
+
+    const trashIconSvg =
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
 
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.className = 'btn-delete';
     deleteBtn.setAttribute('aria-label', t('pv_btn_delete'));
     deleteBtn.title = t('pv_btn_delete');
-    deleteBtn.textContent = 'x';
+    deleteBtn.innerHTML = trashIconSvg;
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (deleteBtn.dataset.confirming === 'true') {
@@ -493,7 +526,7 @@ function renderList(): void {
       const timer = setTimeout(() => {
         deleteBtn.dataset.confirming = 'false';
         deleteBtn.classList.remove('confirming');
-        deleteBtn.textContent = 'x';
+        deleteBtn.innerHTML = trashIconSvg;
         deleteTimers.delete(prompt.id);
       }, 3000);
       deleteTimers.set(prompt.id, timer);
@@ -549,6 +582,12 @@ function renderList(): void {
 
 // Event Listeners
 btnHelp.addEventListener('click', () => setHelpOpen(helpPanel.hidden));
+btnThemeToggle.addEventListener('click', () => {
+  const next: ThemePreference = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  updateThemeButtonUI();
+  void browser.storage.local.set({ [STORAGE_THEME_KEY]: next });
+});
 btnHelpClose.addEventListener('click', () => setHelpOpen(false));
 btnHelpLoadExamples.addEventListener('click', () => void loadExampleTemplates());
 btnLoadExamples.addEventListener('click', () => void loadExampleTemplates());
@@ -633,12 +672,17 @@ document.addEventListener('keydown', (e) => {
 });
 
 async function init(): Promise<void> {
-  const [prompts, storageLocale] = await Promise.all([
+  const [prompts, storagePrefs] = await Promise.all([
     loadPrompts(),
-    browser.storage.local.get(STORAGE_LOCALE_KEY),
+    browser.storage.local.get([STORAGE_LOCALE_KEY, STORAGE_THEME_KEY]),
   ]);
 
-  const savedLocale = storageLocale[STORAGE_LOCALE_KEY];
+  const savedTheme = storagePrefs[STORAGE_THEME_KEY];
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    document.documentElement.dataset.theme = savedTheme;
+  }
+
+  const savedLocale = storagePrefs[STORAGE_LOCALE_KEY];
   const initialLocale: SupportedLocale =
     savedLocale === 'es' || savedLocale === 'en' ? savedLocale : detectBrowserLocale();
 

@@ -5,6 +5,9 @@ export type { PromptVariable };
 
 export const STORAGE_PROMPTS_KEY = 'pv_prompts_v1';
 export const STORAGE_SETTINGS_KEY = 'pv_settings_v1';
+export const STORAGE_THEME_KEY = 'pv_theme_v1';
+
+export type ThemePreference = 'light' | 'dark';
 
 export interface Prompt {
   id: string;
