@@ -1,3 +1,5 @@
 packages:
   - 'extensions/*'
   - 'packages/*'
+patchedDependencies:
+  undici@8.13.1: patches/undici@8.13.1.patch

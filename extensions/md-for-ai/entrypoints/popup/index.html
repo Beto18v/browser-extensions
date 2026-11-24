@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,115 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div id="app"></div>
+    <div class="popup-container">
+      <header class="popup-header">
+        <div class="brand">
+          <span class="app-title" id="text-app-title">MD for AI</span>
+        </div>
+        <button type="button" id="btn-lang-toggle" class="btn-lang" aria-label="Cambiar idioma">
+          <span id="lang-current">ES</span>
+        </button>
+      </header>
+
+      <div id="error-banner" class="error-banner" role="alert" hidden></div>
+
+      <main class="popup-main">
+        <section class="section-mode">
+          <fieldset class="mode-fieldset">
+            <legend class="sr-only" id="text-mode-legend">Modo de extracción</legend>
+            <div class="mode-selector" role="radiogroup" aria-label="Modo de extracción">
+              <label class="mode-option" for="mode-article">
+                <input type="radio" id="mode-article" name="extract-mode" value="article" checked />
+                <span id="text-mode-article">Artículo</span>
+              </label>
+              <label class="mode-option" for="mode-full">
+                <input type="radio" id="mode-full" name="extract-mode" value="full" />
+                <span id="text-mode-full">Página completa</span>
+              </label>
+              <label class="mode-option" for="mode-selection">
+                <input type="radio" id="mode-selection" name="extract-mode" value="selection" />
+                <span id="text-mode-selection">Selección</span>
+              </label>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="section-toggles">
+          <label class="toggle-control" for="toggle-links">
+            <input type="checkbox" id="toggle-links" checked />
+            <span class="toggle-track">
+              <span class="toggle-thumb"></span>
+            </span>
+            <span class="toggle-label" id="text-toggle-links">Incluir enlaces</span>
+          </label>
+          <label class="toggle-control" for="toggle-images-alt">
+            <input type="checkbox" id="toggle-images-alt" checked />
+            <span class="toggle-track">
+              <span class="toggle-thumb"></span>
+            </span>
+            <span class="toggle-label" id="text-toggle-images-alt">Imágenes como texto alt</span>
+          </label>
+          <label class="toggle-control" for="toggle-meta">
+            <input type="checkbox" id="toggle-meta" checked />
+            <span class="toggle-track">
+              <span class="toggle-thumb"></span>
+            </span>
+            <span class="toggle-label" id="text-toggle-meta">Encabezado con título/URL/fecha</span>
+          </label>
+        </section>
+
+        <section class="section-preview">
+          <div class="preview-header">
+            <label for="markdown-preview" class="preview-label" id="text-preview-label">Vista previa Markdown</label>
+            <span id="token-counter" class="token-counter" aria-live="polite">≈ 0 tokens</span>
+          </div>
+          <textarea
+            id="markdown-preview"
+            class="markdown-textarea"
+            readonly
+            rows="8"
+            spellcheck="false"
+            aria-label="Vista previa Markdown"
+          ></textarea>
+        </section>
+
+        <section class="section-limits">
+          <div class="limit-chips" role="radiogroup" aria-label="Límite de tokens">
+            <button type="button" class="chip active" data-limit="8192" aria-pressed="true">
+              <span class="chip-name">8k</span>
+              <span class="chip-status" id="chip-status-8192"></span>
+            </button>
+            <button type="button" class="chip" data-limit="32768" aria-pressed="false">
+              <span class="chip-name">32k</span>
+              <span class="chip-status" id="chip-status-32768"></span>
+            </button>
+            <button type="button" class="chip" data-limit="131072" aria-pressed="false">
+              <span class="chip-name">128k</span>
+              <span class="chip-status" id="chip-status-131072"></span>
+            </button>
+            <button type="button" class="chip" data-limit="204800" aria-pressed="false">
+              <span class="chip-name">200k</span>
+              <span class="chip-status" id="chip-status-204800"></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="section-actions">
+          <button type="button" id="btn-trim" class="btn btn-secondary" disabled>
+            <span id="text-btn-trim">Recortar para que quepa</span>
+          </button>
+          <button type="button" id="btn-copy" class="btn btn-primary">
+            <span id="text-btn-copy">Copiar</span>
+          </button>
+        </section>
+      </main>
+
+      <footer class="popup-footer">
+        <a href="https://nival.is-a.dev" target="_blank" rel="noopener noreferrer" class="footer-link">
+          Nicolas Valenzuela (Beto18v)
+        </a>
+      </footer>
+    </div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

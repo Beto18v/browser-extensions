@@ -68,9 +68,14 @@ Cada extensión debe integrar de forma limpia, elegante y nativa (sin Shadow DOM
 
 ---
 
-## 🛑 5. Política de Git: Autorización Explícita Requerida (MANDATORIO)
+## 🛑 5. Política de Git y Ciclo de Entrega (MANDATORIO)
 
 1. **Prohibido Commit o Push Autónomo:**
    - Ningún agente de IA debe ejecutar `git commit`, `git push` o alterar el historial remoto de Git sin autorización expresa y puntual del usuario en el chat.
-2. **Ciclo de Trabajo Seguro:**
-   - Desarrollar, probar, verificar localmente y presentar el resultado al usuario para su aprobación antes de cualquier acción en Git.
+2. **Ciclo de Verificación Obligatorio al Final de Cada Implementación:**
+   - Al finalizar cualquier tarea, implementación o corrección, es mandatorio ejecutar la verificación local:
+     - **Tests:** Ejecutar pruebas unitarias (`pnpm test` o `pnpm --filter <ext> test`).
+     - **Typecheck / Lint:** Validar tipos de TypeScript y sintaxis (`pnpm run compile` o `tsc --noEmit`).
+     - **Build:** Asegurar la compilación limpia sin errores (`pnpm run build` o `pnpm --filter <ext> run build`).
+3. **Sugerencia de Commit:**
+   - Si todas las verificaciones pasan exitosamente (cero errores), el agente debe resumir los cambios y **sugerir el comando y mensaje de commit semántico** (ej. `feat(md-for-ai): ...` o `fix(...): ...`), esperando la confirmación y autorización explícita del usuario antes de ejecutarlo.

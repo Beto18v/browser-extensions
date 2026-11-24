@@ -13,7 +13,8 @@
     "build:prompt-vault": "pnpm --filter prompt-vault run build",
     "zip:prompt-vault": "pnpm --filter prompt-vault run zip",
     "dev:md-for-ai": "pnpm --filter md-for-ai run dev",
-    "dev:prompt-vault": "pnpm --filter prompt-vault run dev"
+    "dev:prompt-vault": "pnpm --filter prompt-vault run dev",
+    "test:md-for-ai": "pnpm --filter md-for-ai run test"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

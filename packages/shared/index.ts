@@ -8,3 +8,14 @@ export const SUITE_AUTHOR = {
   portfolio: 'https://nival.is-a.dev',
   github: 'https://github.com/Beto18v',
 } as const;
+
+export {
+  type SupportedLocale,
+  type TranslationKey,
+  STORAGE_LOCALE_KEY,
+  TRANSLATIONS,
+  detectBrowserLocale,
+  getLocale,
+  setLocale,
+  t,
+} from './src/i18n';

@@ -1,4 +1,10 @@
 {
   "extends": "./.wxt/tsconfig.json",
-  "compilerOptions": {}
+  "compilerOptions": {},
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "entrypoints/**/*",
+    ".wxt/types/*"
+  ]
 }

@@ -1,0 +1,13 @@
+diff --git a/lib/interceptor/decompress.js b/lib/interceptor/decompress.js
+index 835c9fa7794fd2ecf6feca1f713bc0ab29ab2df9..a0a90e292fc28c7631cb89c735c04a3bf8f3356d 100644
+--- a/lib/interceptor/decompress.js
++++ b/lib/interceptor/decompress.js
+@@ -75,7 +75,7 @@ const supportedEncodings = {
+   br: createBrotliDecompress,
+   deflate: createInflate,
+   // https://www.rfc-editor.org/rfc/rfc9659.html#section-3
+-  zstd: createZstdDecompress.bind(null, { params: { [constants.ZSTD_d_windowLogMax]: 23 } })
++  ...(typeof createZstdDecompress === 'function' ? { zstd: createZstdDecompress.bind(null, { params: { [constants?.ZSTD_d_windowLogMax || 23]: 23 } }) } : {})
+ }
+ 
+ const defaultSkipStatusCodes = /** @type {const} */ ([204, 304])
