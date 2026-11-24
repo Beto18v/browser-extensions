@@ -22,6 +22,7 @@ describe('searchPrompts', () => {
       title: 'Translate',
       body: 'Translate text to Spanish',
       tags: ['language'],
+      categoryId: 'writing',
       usageCount: 5,
       pinned: false,
     }),
@@ -30,6 +31,7 @@ describe('searchPrompts', () => {
       title: 'Code Review',
       body: 'Review TypeScript code for bugs',
       tags: ['typescript', 'review'],
+      categoryId: 'code',
       usageCount: 2,
       pinned: true,
     }),
@@ -38,6 +40,7 @@ describe('searchPrompts', () => {
       title: 'Summarize',
       body: 'Summarize the article in 3 bullets',
       tags: ['writing', 'review'],
+      categoryId: 'writing',
       usageCount: 12,
       pinned: false,
     }),
@@ -46,6 +49,7 @@ describe('searchPrompts', () => {
       title: 'Review',
       body: 'General review checklist',
       tags: ['qa'],
+      categoryId: 'code',
       usageCount: 1,
       pinned: false,
     }),
@@ -75,5 +79,20 @@ describe('searchPrompts', () => {
   it('returns empty array when nothing matches', () => {
     const result = searchPrompts(prompts, 'nonexistent-xyz');
     expect(result).toEqual([]);
+  });
+
+  it('filters by category code and returns only prompts in that category', () => {
+    const result = searchPrompts(prompts, '', 'code');
+    expect(result.map((p) => p.id)).toEqual(['2', '4']);
+  });
+
+  it('combines text search with category filter', () => {
+    const result = searchPrompts(prompts, 'review', 'writing');
+    expect(result.map((p) => p.id)).toEqual(['3']);
+  });
+
+  it('does not filter when categoryId is undefined (All)', () => {
+    const result = searchPrompts(prompts, '', undefined);
+    expect(result.map((p) => p.id)).toEqual(['2', '3', '1', '4']);
   });
 });

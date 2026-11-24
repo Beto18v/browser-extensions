@@ -16,9 +16,12 @@ vi.mock('wxt/browser', () => ({
 }));
 
 import {
+  createCategory,
   createPrompt,
+  deleteCategory,
   deletePrompt,
   incrementUsage,
+  loadCategories,
   loadPrompts,
   savePrompts,
   STORAGE_PROMPTS_KEY,
@@ -102,5 +105,31 @@ describe('storage', () => {
 
     const loaded = await loadPrompts();
     expect(loaded[0]?.usageCount).toBe(10);
+  });
+
+  it('creates and loads user categories starting from empty', async () => {
+    expect(await loadCategories()).toEqual([]);
+
+    const cat = await createCategory('Marketing', '#ec4899');
+    expect(cat.id).toHaveLength(8);
+    expect(cat.name).toBe('Marketing');
+    expect(cat.color).toBe('#ec4899');
+
+    const loaded = await loadCategories();
+    expect(loaded).toHaveLength(1);
+    expect(loaded[0]?.name).toBe('Marketing');
+  });
+
+  it('deletes a category and clears categoryId from prompts without deleting prompts', async () => {
+    const cat = await createCategory('Legal', '#3b82f6');
+    const prompt = await createPrompt('Contract', 'Review clause', [], cat.id);
+    expect(prompt.categoryId).toBe(cat.id);
+
+    await deleteCategory(cat.id);
+
+    expect(await loadCategories()).toEqual([]);
+    const prompts = await loadPrompts();
+    expect(prompts).toHaveLength(1);
+    expect(prompts[0]?.categoryId).toBeUndefined();
   });
 });

@@ -9,13 +9,17 @@ import {
   type SupportedLocale,
 } from '@browser-extensions/shared';
 import {
+  createCategory,
   createPrompt,
+  deleteCategory,
   deletePrompt,
   incrementUsage,
+  loadCategories,
   loadPrompts,
   savePrompts,
   STORAGE_THEME_KEY,
   updatePrompt,
+  type Category,
   type Prompt,
   type ThemePreference,
 } from '../../src/lib/storage';
@@ -46,11 +50,14 @@ const textHelpExampleLabel = document.getElementById('text-help-example-label') 
 const textHelpExampleCode = document.getElementById('text-help-example-code') as HTMLElement;
 const textHelpUsesTitle = document.getElementById('text-help-uses-title') as HTMLElement;
 const textHelpUsesDesc = document.getElementById('text-help-uses-desc') as HTMLParagraphElement;
+const textHelpCategoriesTitle = document.getElementById('text-help-categories-title') as HTMLElement;
+const textHelpCategoriesDesc = document.getElementById('text-help-categories-desc') as HTMLParagraphElement;
 const textHelpKeysTitle = document.getElementById('text-help-keys-title') as HTMLElement;
 const textHelpKeysDesc = document.getElementById('text-help-keys-desc') as HTMLParagraphElement;
 const btnHelpLoadExamples = document.getElementById('btn-help-load-examples') as HTMLButtonElement;
 const btnHelpClose = document.getElementById('btn-help-close') as HTMLButtonElement;
 
+const categoryFilter = document.getElementById('category-filter') as HTMLDivElement;
 const searchInput = document.getElementById('search-input') as HTMLInputElement;
 const promptList = document.getElementById('prompt-list') as HTMLUListElement;
 
@@ -73,6 +80,12 @@ const inputBody = document.getElementById('input-body') as HTMLTextAreaElement;
 const bodyVariablesHint = document.getElementById('body-variables-hint') as HTMLSpanElement;
 const labelTags = document.getElementById('label-tags') as HTMLLabelElement;
 const inputTags = document.getElementById('input-tags') as HTMLInputElement;
+const labelCategory = document.getElementById('label-category') as HTMLSpanElement;
+const editorCategoryOptions = document.getElementById('editor-category-options') as HTMLDivElement;
+const categoryEmptyHint = document.getElementById('category-empty-hint') as HTMLSpanElement;
+const inputCategoryName = document.getElementById('input-category-name') as HTMLInputElement;
+const inputCategoryColor = document.getElementById('input-category-color') as HTMLInputElement;
+const btnAddCategory = document.getElementById('btn-add-category') as HTMLButtonElement;
 const btnCancelEdit = document.getElementById('btn-cancel-edit') as HTMLButtonElement;
 const btnSave = document.getElementById('btn-save') as HTMLButtonElement;
 
@@ -90,7 +103,10 @@ const textShortcutHint = document.getElementById('text-shortcut-hint') as HTMLSp
 
 // State
 let allPrompts: Prompt[] = [];
+let allCategories: Category[] = [];
 let visiblePrompts: Prompt[] = [];
+let activeCategoryId: string | undefined;
+let selectedCategoryId: string | undefined;
 let focusedIndex = 0;
 let editingId: string | null = null;
 let pendingVarPrompt: Prompt | null = null;
@@ -144,6 +160,8 @@ function applyTranslations(): void {
   textHelpExampleCode.textContent = t('pv_help_example_code');
   textHelpUsesTitle.textContent = t('pv_help_uses_title');
   textHelpUsesDesc.textContent = t('pv_help_uses_desc');
+  textHelpCategoriesTitle.textContent = t('pv_help_categories_title');
+  textHelpCategoriesDesc.textContent = t('pv_help_categories_desc');
   textHelpKeysTitle.textContent = t('pv_help_keys_title');
   textHelpKeysDesc.textContent = t('pv_help_keys_desc');
   btnHelpLoadExamples.textContent = t('pv_btn_load_examples');
@@ -164,6 +182,10 @@ function applyTranslations(): void {
   inputBody.placeholder = t('pv_placeholder_body');
   labelTags.textContent = t('pv_label_tags');
   inputTags.placeholder = t('pv_placeholder_tags');
+  labelCategory.textContent = t('pv_category_label');
+  categoryEmptyHint.textContent = t('pv_category_empty_hint');
+  inputCategoryName.placeholder = t('pv_category_name_placeholder');
+  btnAddCategory.textContent = t('pv_category_add');
   btnCancelEdit.textContent = t('pv_btn_cancel');
   btnSave.textContent = t('pv_btn_save');
 
@@ -173,8 +195,124 @@ function applyTranslations(): void {
   textCopyToast.textContent = t('pv_btn_copied');
 
   textShortcutHint.textContent = isMacOS() ? t('pv_shortcut_hint_mac') : t('pv_shortcut_hint');
+  renderCategoryFilter();
+  renderEditorCategoryOptions();
   updateThemeButtonUI();
   updateBodyVariablesHint();
+}
+
+function renderCategoryFilter(): void {
+  categoryFilter.innerHTML = '';
+
+  if (allCategories.length === 0 || !helpPanel.hidden || !editorPanel.hidden) {
+    categoryFilter.hidden = true;
+    return;
+  }
+
+  categoryFilter.hidden = false;
+
+  const allBtn = document.createElement('button');
+  allBtn.type = 'button';
+  allBtn.className = `category-chip${activeCategoryId === undefined ? ' active' : ''}`;
+  allBtn.setAttribute('role', 'tab');
+  allBtn.setAttribute('aria-selected', activeCategoryId === undefined ? 'true' : 'false');
+  allBtn.textContent = t('pv_filter_all');
+  allBtn.addEventListener('click', () => {
+    activeCategoryId = undefined;
+    focusedIndex = 0;
+    renderCategoryFilter();
+    renderList();
+  });
+  categoryFilter.append(allBtn);
+
+  allCategories.forEach((category) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const isActive = activeCategoryId === category.id;
+    btn.className = `category-chip${isActive ? ' active' : ''}`;
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    if (isActive) {
+      btn.style.borderColor = category.color;
+    }
+
+    const dot = document.createElement('span');
+    dot.className = 'category-dot';
+    dot.style.backgroundColor = category.color;
+    dot.setAttribute('aria-hidden', 'true');
+
+    const text = document.createTextNode(category.name);
+    btn.append(dot, text);
+    btn.addEventListener('click', () => {
+      activeCategoryId = category.id;
+      focusedIndex = 0;
+      renderCategoryFilter();
+      renderList();
+    });
+    categoryFilter.append(btn);
+  });
+}
+
+function renderEditorCategoryOptions(): void {
+  editorCategoryOptions.innerHTML = '';
+  categoryEmptyHint.hidden = allCategories.length > 0;
+
+  allCategories.forEach((category) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'category-option-wrap';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const isSelected = selectedCategoryId === category.id;
+    btn.className = `category-option-btn${isSelected ? ' selected' : ''}`;
+    btn.setAttribute('role', 'radio');
+    btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+    if (isSelected) {
+      btn.style.borderColor = category.color;
+    }
+
+    const dot = document.createElement('span');
+    dot.className = 'category-dot';
+    dot.style.backgroundColor = category.color;
+    dot.setAttribute('aria-hidden', 'true');
+
+    const text = document.createTextNode(category.name);
+    btn.append(dot, text);
+    btn.addEventListener('click', () => {
+      selectedCategoryId = selectedCategoryId === category.id ? undefined : category.id;
+      renderEditorCategoryOptions();
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'category-delete-btn';
+    delBtn.setAttribute('aria-label', t('pv_category_delete'));
+    delBtn.title = t('pv_category_delete');
+    delBtn.textContent = 'x';
+    delBtn.addEventListener('click', () => {
+      void (async () => {
+        await deleteCategory(category.id);
+        allCategories = allCategories.filter((c) => c.id !== category.id);
+        allPrompts = allPrompts.map((p) => {
+          if (p.categoryId === category.id) {
+            const { categoryId: _removed, ...rest } = p;
+            return rest;
+          }
+          return p;
+        });
+        if (selectedCategoryId === category.id) {
+          selectedCategoryId = undefined;
+        }
+        if (activeCategoryId === category.id) {
+          activeCategoryId = undefined;
+        }
+        renderEditorCategoryOptions();
+      })();
+    });
+
+    wrap.append(btn, delBtn);
+    editorCategoryOptions.append(wrap);
+  });
 }
 
 function updateNoResultsText(query: string): void {
@@ -303,12 +441,14 @@ function setHelpOpen(open: boolean): void {
 
   if (open) {
     editorPanel.hidden = true;
+    categoryFilter.hidden = true;
     searchInput.parentElement!.hidden = true;
     promptList.hidden = true;
     emptyState.hidden = true;
     noResults.hidden = true;
     btnHelpClose.focus();
   } else {
+    renderCategoryFilter();
     searchInput.parentElement!.hidden = false;
     renderList();
     searchInput.focus();
@@ -350,17 +490,20 @@ function openEditor(prompt?: Prompt): void {
   btnHelp.setAttribute('aria-expanded', 'false');
 
   editingId = prompt ? prompt.id : null;
+  selectedCategoryId = prompt ? prompt.categoryId : undefined;
   editorTitle.textContent = editingId ? t('pv_editor_edit_title') : t('pv_editor_new_title');
   inputTitle.value = prompt ? prompt.title : '';
   inputBody.value = prompt ? prompt.body : '';
   inputTags.value = prompt ? prompt.tags.join(', ') : '';
   inputTitle.classList.remove('input-error');
   inputBody.classList.remove('input-error');
+  renderEditorCategoryOptions();
   updateBodyVariablesHint();
 
   promptList.hidden = true;
   emptyState.hidden = true;
   noResults.hidden = true;
+  categoryFilter.hidden = true;
   searchInput.parentElement!.hidden = true;
   editorPanel.hidden = false;
   inputTitle.focus();
@@ -368,7 +511,9 @@ function openEditor(prompt?: Prompt): void {
 
 function closeEditor(): void {
   editingId = null;
+  selectedCategoryId = undefined;
   editorPanel.hidden = true;
+  renderCategoryFilter();
   searchInput.parentElement!.hidden = false;
   renderList();
   searchInput.focus();
@@ -395,10 +540,15 @@ async function saveEditor(): Promise<void> {
     .filter(Boolean);
 
   if (editingId) {
-    const updated = await updatePrompt(editingId, { title, body: inputBody.value, tags });
+    const updated = await updatePrompt(editingId, {
+      title,
+      body: inputBody.value,
+      tags,
+      categoryId: selectedCategoryId,
+    });
     allPrompts = allPrompts.map((p) => (p.id === updated.id ? updated : p));
   } else {
-    const created = await createPrompt(title, inputBody.value, tags);
+    const created = await createPrompt(title, inputBody.value, tags, selectedCategoryId);
     allPrompts.push(created);
   }
 
@@ -421,7 +571,7 @@ function renderList(): void {
   if (!editorPanel.hidden || !helpPanel.hidden) return;
 
   const query = searchInput.value;
-  visiblePrompts = searchPrompts(allPrompts, query);
+  visiblePrompts = searchPrompts(allPrompts, query, activeCategoryId);
   promptList.innerHTML = '';
 
   if (allPrompts.length === 0) {
@@ -433,9 +583,11 @@ function renderList(): void {
 
   emptyState.hidden = true;
 
-  if (visiblePrompts.length === 0 && query.trim().length > 0) {
+  if (visiblePrompts.length === 0 && (query.trim().length > 0 || activeCategoryId !== undefined)) {
     promptList.hidden = true;
-    updateNoResultsText(query.trim());
+    const activeCat = allCategories.find((c) => c.id === activeCategoryId);
+    const displayLabel = query.trim() || (activeCat ? activeCat.name : '');
+    updateNoResultsText(displayLabel);
     noResults.hidden = false;
     return;
   }
@@ -456,6 +608,17 @@ function renderList(): void {
 
     const header = document.createElement('div');
     header.className = 'prompt-item-header';
+
+    const category = prompt.categoryId
+      ? allCategories.find((c) => c.id === prompt.categoryId)
+      : undefined;
+    const categoryDot = document.createElement('span');
+    categoryDot.className = 'prompt-category-dot';
+    categoryDot.setAttribute('aria-hidden', 'true');
+    if (category) {
+      categoryDot.style.backgroundColor = category.color;
+      categoryDot.title = category.name;
+    }
 
     const titleSpan = document.createElement('span');
     titleSpan.className = 'prompt-title';
@@ -543,7 +706,7 @@ function renderList(): void {
     });
 
     actions.append(pinBtn, editBtn, deleteBtn, copyBtn);
-    header.append(titleSpan, actions);
+    header.append(categoryDot, titleSpan, actions);
 
     const preview = document.createElement('p');
     preview.className = 'prompt-preview';
@@ -597,6 +760,28 @@ btnCreateFirst.addEventListener('click', () => openEditor());
 btnCancelEdit.addEventListener('click', () => closeEditor());
 btnSave.addEventListener('click', () => void saveEditor());
 inputBody.addEventListener('input', updateBodyVariablesHint);
+
+async function addCategoryFromEditor(): Promise<void> {
+  const name = inputCategoryName.value.trim();
+  if (!name) {
+    inputCategoryName.focus();
+    return;
+  }
+
+  const created = await createCategory(name, inputCategoryColor.value || '#3b82f6');
+  allCategories.push(created);
+  selectedCategoryId = created.id;
+  inputCategoryName.value = '';
+  renderEditorCategoryOptions();
+}
+
+btnAddCategory.addEventListener('click', () => void addCategoryFromEditor());
+inputCategoryName.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    void addCategoryFromEditor();
+  }
+});
 
 btnCancelVars.addEventListener('click', () => closeVariablesModal());
 btnConfirmVars.addEventListener('click', () => confirmVariablesModal());
@@ -672,8 +857,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 async function init(): Promise<void> {
-  const [prompts, storagePrefs] = await Promise.all([
+  const [prompts, categories, storagePrefs] = await Promise.all([
     loadPrompts(),
+    loadCategories(),
     browser.storage.local.get([STORAGE_LOCALE_KEY, STORAGE_THEME_KEY]),
   ]);
 
@@ -687,6 +873,7 @@ async function init(): Promise<void> {
     savedLocale === 'es' || savedLocale === 'en' ? savedLocale : detectBrowserLocale();
 
   setLocale(initialLocale);
+  allCategories = categories;
   const synced = syncExamplesLocale(prompts, initialLocale);
   allPrompts = synced.prompts;
   if (synced.changed) {

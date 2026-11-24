@@ -55,6 +55,13 @@
         </div>
 
         <div class="help-block">
+          <strong id="text-help-categories-title" class="help-subtitle">Categorías con color:</strong>
+          <p id="text-help-categories-desc" class="help-text">
+            Crea tus propias categorías con nombre y color al crear o editar un prompt. Al tener al menos una, aparecerán arriba para filtrar la lista.
+          </p>
+        </div>
+
+        <div class="help-block">
           <strong id="text-help-keys-title" class="help-subtitle">Atajos rápidos:</strong>
           <p id="text-help-keys-desc" class="help-text">
             Alt+Shift+V abre la ventana · ↑ / ↓ navega · Enter copia · Esc cierra.
@@ -66,6 +73,9 @@
           <button id="btn-help-close" class="btn btn-primary" type="button">Entendido</button>
         </div>
       </section>
+
+      <!-- Filtro de categorías -->
+      <div id="category-filter" class="category-filter" role="tablist" aria-label="Categorías"></div>
 
       <!-- Buscador principal — autofocus al abrir -->
       <div class="search-wrap">
@@ -138,6 +148,30 @@
             autocomplete="off"
             placeholder="correo, resumen, estudio"
           />
+        </div>
+
+        <div class="field-group">
+          <span id="label-category" class="field-label">Categoría</span>
+          <div id="editor-category-options" class="category-options" role="radiogroup" aria-labelledby="label-category"></div>
+          <span id="category-empty-hint" class="category-empty-hint" hidden></span>
+          <div class="category-creator">
+            <input
+              id="input-category-name"
+              class="text-input category-name-input"
+              type="text"
+              maxlength="24"
+              autocomplete="off"
+              placeholder="Nombre de categoría"
+            />
+            <input
+              id="input-category-color"
+              class="category-color-input"
+              type="color"
+              value="#3b82f6"
+              aria-label="Color"
+            />
+            <button id="btn-add-category" class="btn btn-secondary btn-add-category" type="button">Añadir</button>
+          </div>
         </div>
 
         <div class="editor-actions">

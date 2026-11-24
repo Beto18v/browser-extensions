@@ -6,14 +6,22 @@ export type { PromptVariable };
 export const STORAGE_PROMPTS_KEY = 'pv_prompts_v1';
 export const STORAGE_SETTINGS_KEY = 'pv_settings_v1';
 export const STORAGE_THEME_KEY = 'pv_theme_v1';
+export const STORAGE_CATEGORIES_KEY = 'pv_categories_v1';
 
 export type ThemePreference = 'light' | 'dark';
+
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
 
 export interface Prompt {
   id: string;
   title: string;
   body: string;
   tags: string[];
+  categoryId?: string;
   variables: PromptVariable[];
   createdAt: number;
   updatedAt: number;
@@ -51,7 +59,8 @@ export async function savePrompts(prompts: Prompt[]): Promise<void> {
 export async function createPrompt(
   title: string,
   body: string,
-  tags: string[] = []
+  tags: string[] = [],
+  categoryId?: string
 ): Promise<Prompt> {
   const prompts = await loadPrompts();
   const now = Date.now();
@@ -62,6 +71,7 @@ export async function createPrompt(
     title: title.trim(),
     body,
     tags: normalizedTags,
+    ...(categoryId ? { categoryId } : {}),
     variables: extractVariables(body),
     createdAt: now,
     updatedAt: now,
@@ -137,4 +147,58 @@ export async function incrementUsage(id: string): Promise<void> {
     usageCount: existing.usageCount + 1,
   };
   await savePrompts(prompts);
+}
+
+/**
+ * Loads all user-created categories from browser.storage.local.
+ */
+export async function loadCategories(): Promise<Category[]> {
+  const result = await browser.storage.local.get(STORAGE_CATEGORIES_KEY);
+  const raw = result[STORAGE_CATEGORIES_KEY];
+  return Array.isArray(raw) ? (raw as Category[]) : [];
+}
+
+/**
+ * Persists the category list to browser.storage.local.
+ */
+export async function saveCategories(categories: Category[]): Promise<void> {
+  await browser.storage.local.set({ [STORAGE_CATEGORIES_KEY]: categories });
+}
+
+/**
+ * Creates a new user category with name and hex color.
+ */
+export async function createCategory(name: string, color: string): Promise<Category> {
+  const categories = await loadCategories();
+  const category: Category = {
+    id: generateId(),
+    name: name.trim(),
+    color,
+  };
+  categories.push(category);
+  await saveCategories(categories);
+  return category;
+}
+
+/**
+ * Deletes a category by id and clears categoryId on any prompts that referenced it.
+ */
+export async function deleteCategory(id: string): Promise<void> {
+  const [categories, prompts] = await Promise.all([loadCategories(), loadPrompts()]);
+  const nextCategories = categories.filter((c) => c.id !== id);
+  await saveCategories(nextCategories);
+
+  let changed = false;
+  const nextPrompts = prompts.map((p) => {
+    if (p.categoryId === id) {
+      changed = true;
+      const { categoryId: _removed, ...rest } = p;
+      return rest;
+    }
+    return p;
+  });
+
+  if (changed) {
+    await savePrompts(nextPrompts);
+  }
 }
