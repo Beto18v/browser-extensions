@@ -1,26 +1,21 @@
 {
   "name": "browser-extensions-suite",
   "version": "1.0.0",
-  "type": "module",
+  "private": true,
   "description": "Suite of modular, production-ready browser extensions built with WXT, Manifest V3, TypeScript, and Vite.",
-  "scripts": {
-    "pack": "node scripts/pack-all.js",
-    "zip:all": "node scripts/pack-all.js",
-    "sync:icons": "node scripts/sync-icons.js",
-    "generate:icons": "python scripts/generate-icons.py",
-    "build:all": "npm run build:docguard && npm run build:dark-mode && npm run build:recordflow",
-    "test:docguard": "node extensions/docguard/test/run-tests.js",
-    "build:docguard": "npm --prefix extensions/docguard run build",
-    "zip:docguard": "npm --prefix extensions/docguard run zip",
-    "dev:docguard": "npm --prefix extensions/docguard run dev",
-    "build:dark-mode": "npm --prefix extensions/dark-mode run build",
-    "zip:dark-mode": "npm --prefix extensions/dark-mode run zip",
-    "dev:dark-mode": "npm --prefix extensions/dark-mode run dev",
-    "build:recordflow": "npm --prefix extensions/recordflow run build",
-    "zip:recordflow": "npm --prefix extensions/recordflow run zip",
-    "dev:recordflow": "npm --prefix extensions/recordflow run dev"
-  },
-  "keywords": ["browser-extension", "wxt", "vite", "typescript", "manifest-v3", "chrome-extension", "edge-addon"],
   "author": "Nicolas Valenzuela (Beto18v)",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm -r --filter \"./extensions/*\" run build",
+    "zip": "pnpm -r --filter \"./extensions/*\" run zip",
+    "build:md-for-ai": "pnpm --filter md-for-ai run build",
+    "zip:md-for-ai": "pnpm --filter md-for-ai run zip",
+    "build:prompt-vault": "pnpm --filter prompt-vault run build",
+    "zip:prompt-vault": "pnpm --filter prompt-vault run zip",
+    "dev:md-for-ai": "pnpm --filter md-for-ai run dev",
+    "dev:prompt-vault": "pnpm --filter prompt-vault run dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
 }
