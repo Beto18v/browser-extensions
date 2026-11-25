@@ -10,10 +10,10 @@
     "zip": "pnpm -r --filter \"./extensions/*\" run zip",
     "build:md-for-ai": "pnpm --filter md-for-ai run build",
     "zip:md-for-ai": "pnpm --filter md-for-ai run zip",
-    "build:prompt-vault": "pnpm --filter prompt-vault run build",
-    "zip:prompt-vault": "pnpm --filter prompt-vault run zip",
+    "build:prompt-drawer": "pnpm --filter prompt-drawer run build",
+    "zip:prompt-drawer": "pnpm --filter prompt-drawer run zip",
     "dev:md-for-ai": "pnpm --filter md-for-ai run dev",
-    "dev:prompt-vault": "pnpm --filter prompt-vault run dev",
+    "dev:prompt-drawer": "pnpm --filter prompt-drawer run dev",
     "test:md-for-ai": "pnpm --filter md-for-ai run test"
   },
   "devDependencies": {

@@ -1,6 +1,0 @@
-{
-  "pvExtName": { "message": "Prompt Vault" },
-  "pvExtShortName": { "message": "Prompt Vault" },
-  "pvExtDescription": { "message": "Your local AI prompt library. No servers, no subscriptions." },
-  "pvCommandOpen": { "message": "Open Prompt Vault" }
-}

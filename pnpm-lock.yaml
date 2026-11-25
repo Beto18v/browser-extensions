@@ -55,7 +55,7 @@ importers:
         specifier: ^0.21.5
         version: 0.21.5(rolldown@1.2.19)(typescript@5.9.3)(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0))
 
-  extensions/prompt-vault:
+  extensions/prompt-drawer:
     dependencies:
       '@browser-extensions/shared':
         specifier: workspace:*

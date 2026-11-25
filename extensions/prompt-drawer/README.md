@@ -1,4 +1,4 @@
-# Prompt Vault
+# Prompt Drawer
 
 Biblioteca local de prompts para usuarios de asistentes de IA (ChatGPT, Claude, Gemini) que permite buscar, completar variables y copiar cualquier instrucción al portapapeles en menos de 5 segundos.
 
@@ -59,21 +59,21 @@ Sin frameworks de UI (React/Vue/Svelte). Interfaz construida con TypeScript y DO
 1. Instala las dependencias desde la raíz del monorepo y compila la extensión:
    ```bash
    pnpm install
-   pnpm --filter prompt-vault run build
+   pnpm --filter prompt-drawer run build
    ```
 2. Abre `chrome://extensions/` en Google Chrome y activa el **Modo de desarrollador** en la esquina superior derecha.
 3. Haz clic en **Cargar descomprimida**.
-4. Selecciona la carpeta `extensions/prompt-vault/.output/chrome-mv3`.
+4. Selecciona la carpeta `extensions/prompt-drawer/.output/chrome-mv3`.
 
 ## Comandos disponibles
 
-Scripts definidos en `extensions/prompt-vault/package.json`:
+Scripts definidos en `extensions/prompt-drawer/package.json`:
 
 | Comando | Resultado |
 |---|---|
 | `dev` (`wxt`) | Inicia el servidor de desarrollo con recarga en caliente (HMR) para Chrome. |
 | `build` (`wxt build`) | Genera el bundle de producción en `.output/chrome-mv3/`. |
-| `zip` (`wxt zip`) | Compila la extensión y empaqueta el archivo distribuible `.output/prompt-vault-1.0.0-chrome.zip`. |
+| `zip` (`wxt zip`) | Compila la extensión y empaqueta el archivo distribuible `.output/prompt-drawer-1.0.0-chrome.zip`. |
 | `compile` (`tsc --noEmit`) | Ejecuta la verificación estática de tipos de TypeScript sin emitir archivos. |
 | `test` (`vitest run`) | Ejecuta la suite completa de 22 tests unitarios en una sola pasada. |
 | `test:watch` (`vitest`) | Ejecuta Vitest en modo observación continua durante el desarrollo. |
@@ -84,21 +84,21 @@ Scripts definidos en `extensions/prompt-vault/package.json`:
 Ejecuta estos comandos desde la raíz del monorepo:
 
 ```bash
-pnpm --filter prompt-vault run dev
-pnpm --filter prompt-vault test
-pnpm --filter prompt-vault run compile
-pnpm --filter prompt-vault run zip
+pnpm --filter prompt-drawer run dev
+pnpm --filter prompt-drawer test
+pnpm --filter prompt-drawer run compile
+pnpm --filter prompt-drawer run zip
 ```
 
 ## Atajo de teclado
 
 - Atajo predeterminado: `Alt+Shift+V` (en Windows, Linux y macOS).
-- Para personalizarlo, abre `chrome://extensions/shortcuts` en Chrome (o haz clic en el indicador del atajo en el pie del popup) y asigna una nueva combinación en el comando **Abrir Prompt Vault** / **Open Prompt Vault**.
+- Para personalizarlo, abre `chrome://extensions/shortcuts` en Chrome (o haz clic en el indicador del atajo en el pie del popup) y asigna una nueva combinación en el comando **Abrir Prompt Drawer** / **Open Prompt Drawer**.
 - Dentro del popup: `↑` / `↓` navegan por la lista, `Enter` copia el elemento enfocado y `Esc` cierra el modal, la ayuda o el editor.
 
 ## Privacidad
 
-Prompt Vault funciona de forma 100% local en el navegador del usuario, sin llamadas de red, sin telemetría y sin servidores propios ni de terceros. Todos los prompts, etiquetas, contadores de uso y preferencias de idioma o tema se almacenan únicamente en `chrome.storage.local` mediante los permisos mínimos `storage` y `clipboardWrite`.
+Prompt Drawer funciona de forma 100% local en el navegador del usuario, sin llamadas de red, sin telemetría y sin servidores propios ni de terceros. Todos los prompts, etiquetas, contadores de uso y preferencias de idioma o tema se almacenan únicamente en `chrome.storage.local` mediante los permisos mínimos `storage` y `clipboardWrite`.
 
 ## Licencia y autor
 

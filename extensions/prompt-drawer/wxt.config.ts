@@ -13,7 +13,7 @@ export default defineConfig({
     version: '1.0.0',
     permissions: ['storage', 'clipboardWrite'],
     action: {
-      default_title: 'Prompt Vault',
+      default_title: 'Prompt Drawer',
     },
     commands: {
       _execute_action: {
