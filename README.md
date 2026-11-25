@@ -13,7 +13,6 @@ Suite de extensiones de productividad para investigadores, desarrolladores y usu
 | Extensión | Directorio | Descripción | Shortcut | Estado |
 |---|---|---|---|---|
 | Prompt Drawer | `extensions/prompt-drawer/` | Biblioteca local de prompts para IA | `Alt+Shift+V` | v1.0 publicada |
-| Research Vault | `extensions/research-vault/` | Captura y organiza clips de investigación web | `Alt+Shift+R` | En desarrollo |
 
 ## Comandos del monorepo
 
