@@ -8,13 +8,10 @@
   "scripts": {
     "build": "pnpm -r --filter \"./extensions/*\" run build",
     "zip": "pnpm -r --filter \"./extensions/*\" run zip",
-    "build:md-for-ai": "pnpm --filter md-for-ai run build",
-    "zip:md-for-ai": "pnpm --filter md-for-ai run zip",
     "build:prompt-drawer": "pnpm --filter prompt-drawer run build",
     "zip:prompt-drawer": "pnpm --filter prompt-drawer run zip",
-    "dev:md-for-ai": "pnpm --filter md-for-ai run dev",
     "dev:prompt-drawer": "pnpm --filter prompt-drawer run dev",
-    "test:md-for-ai": "pnpm --filter md-for-ai run test"
+    "test:prompt-drawer": "pnpm --filter prompt-drawer run test"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
