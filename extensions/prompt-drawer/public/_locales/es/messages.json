@@ -1,5 +1,5 @@
 {
-  "pvExtName": { "message": "Prompt Drawer" },
+  "pvExtName": { "message": "Prompt Drawer — Baúl de Prompts" },
   "pvExtShortName": { "message": "Prompt Drawer" },
   "pvExtDescription": { "message": "Tu biblioteca de prompts para IA, local y sin servidores." },
   "pvCommandOpen": { "message": "Abrir Prompt Drawer" }

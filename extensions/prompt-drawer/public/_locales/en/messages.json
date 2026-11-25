@@ -1,5 +1,5 @@
 {
-  "pvExtName": { "message": "Prompt Drawer" },
+  "pvExtName": { "message": "Prompt Drawer — Local AI Prompts" },
   "pvExtShortName": { "message": "Prompt Drawer" },
   "pvExtDescription": { "message": "Your local AI prompt library. No servers, no subscriptions." },
   "pvCommandOpen": { "message": "Open Prompt Drawer" }
