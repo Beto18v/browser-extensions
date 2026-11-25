@@ -1,81 +1,47 @@
-# 🤖 AI Agent Guidelines & Architecture Standards
-> **Repository:** `browser-extensions-suite`  
-> **Author:** Nicolás Valenzuela ([Portfolio](https://nival.is-a.dev/) | [GitHub](https://github.com/Beto18v))
+# AI Agent Guidelines — Browser Extensions Suite
 
-Este documento establece las reglas obligatorias de arquitectura, rendimiento, diseño, marca personal y control de versiones que cualquier agente de IA o desarrollador debe seguir al mantener o crear extensiones en este repositorio.
+Reglas globales obligatorias para cualquier agente o desarrollador que trabaje en este monorepo.
 
-> 🛑 **REGLA DE ORO DE CONTROL DE VERSIONES (ESTRICTA):**  
-> Queda **estrictamente prohibido** ejecutar `git commit` o `git push` de forma automática o por iniciativa propia del agente.  
-> **Cualquier commit o push a Git requiere autorización explícita del usuario en el chat.**
+## Regla de Oro — Git
 
----
+- Queda **estrictamente prohibido** ejecutar `git commit` o `git push` sin autorización explícita del usuario en el chat.
+- Ciclo obligatorio al terminar cada tarea: **test → typecheck → build**.
+- Al finalizar con todas las verificaciones en verde, sugerir el comando y mensaje de commit semántico pero **no ejecutarlo**.
 
-## 🏛️ 1. Arquitectura y Stack Tecnológico
+## Estructura del Monorepo
 
-1. **Framework Obligatorio: WXT (`wxt.dev`)**
-   - Todas las extensiones residen dentro de su propio directorio dedicado: `extensions/<nombre-extension>/`.
-   - Compilación basada en **Vite + TypeScript 5.9** bajo **Manifest V3**.
-   - Cada extensión es **autónoma, autocontenida y especializada**. No debe depender de capas o Web Components compartidos pesados que introduzcan latencia o bloqueos de renderizado.
-   - La configuración del manifiesto se define estrictamente en `wxt.config.ts`.
-2. **Estructura Estándar de cada Extensión:**
-   ```text
-   extensions/<extension-name>/
-   ├── entrypoints/
-   │   ├── popup/           # Popup rápido (index.html, main.ts, style.css)
-   │   ├── sidepanel/       # Panel lateral persistente (si aplica)
-   │   ├── content.ts       # Script inyectado (si aplica)
-   │   └── background.ts    # Service worker central
-   ├── utils/ o modules/    # Lógica de negocio modular tipada
-   ├── public/              # Assets e iconos locales (icon-16.png, icon-48.png, icon-128.png)
-   ├── package.json         # Dependencias y scripts autónomos (build, dev, zip)
-   ├── tsconfig.json        # Extiende ./.wxt/tsconfig.json
-   └── wxt.config.ts
-   ```
+- Cada extensión vive en `extensions/<nombre>/`, es autónoma y tiene su propio `package.json`, `AGENTS.md`, `README.md`, tests y build.
+- Paquete compartido: `packages/shared/` → `@browser-extensions/shared` (i18n, tipos).
+- El workspace raíz solo orquesta con `pnpm` scripts.
 
----
+## Stack Tecnológico
 
-## ⚡ 2. Rendimiento y Cero Latencia (0 ms)
+- **Framework y plataforma:** WXT 0.21.5 + Vite + TypeScript 5.9 + Manifest V3 (Chrome, Edge, Brave).
+- **UI:** Sin frameworks de componentes (React, Vue, Svelte). TypeScript + DOM nativo.
+- **Tests:** Vitest + jsdom.
 
-1. **Renderizado en Frame 0:**
-   - La interfaz de usuario (popup, sidepanel o modal) debe pintarse de forma inmediata en el primer frame.
-   - Prohibido encadenar llamadas asíncronas bloqueantes que retrasen el primer pintado o generen saltos visuales (*layout shift*).
-2. **Navegación Fluida Keyboard-First:**
-   - En herramientas de búsqueda o productividad, el input principal debe tener `autofocus` al abrirse.
-   - Soportar navegación por flechas (`↑` / `↓`), confirmación con `Enter` y escape con `Esc`.
-3. **Persistencia No Bloqueante:**
-   - La persistencia a disco (`chrome.storage.local` o `IndexedDB`) debe ejecutarse en segundo plano sin bloquear la UI ni congelar animaciones.
+## Filosofía Local-First
 
----
+- Cero backend propio. Almacenamiento 100% local en `chrome.storage.local` / `IndexedDB`.
+- Sin API keys ni credenciales privadas en el código fuente. Si se integra IA externa opcional, aplicar el patrón **BYOK (Bring Your Own Key)**.
 
-## 🔒 3. Filosofía Local-First ($0 Costo en la Nube)
+## Rendimiento
 
-1. **Privacidad y Costos Nulos:**
-   - Ninguna extensión debe depender de servidores backend propios de pago.
-   - El almacenamiento de datos (prompts, notas, snippets, configuraciones) es 100% local en el navegador del usuario (`chrome.storage.local` / `IndexedDB`).
-2. **Seguridad Total:**
-   - Si una extensión utiliza APIs de IA externas opcionales, aplicar estrictamente el patrón **BYOK (Bring Your Own Key)**.
-   - Nunca incluir API keys o credenciales privadas en el código fuente.
+- Render en frame 0. Sin layout shift. Persistencia no bloqueante.
+- Autofocus en el input principal al abrir cada extensión.
 
----
+## Marca Personal
 
-## 👤 4. Marca Personal y Atribución
+- `"author": "Nicolas Valenzuela (Beto18v)"` en cada `package.json`.
+- Pie de UI: nombre + enlace a [nival.is-a.dev](https://nival.is-a.dev) y [github.com/Beto18v](https://github.com/Beto18v).
+- Sin emojis en ninguna interfaz.
 
-Cada extensión debe integrar de forma limpia, elegante y nativa (sin Shadow DOM pesado ni retrasos) la autoría de Nicolás Valenzuela en su pie de interfaz o configuración:
-- Nombre: **Nicolas Valenzuela (Beto18v)**
-- Enlace al Portfolio: [nival.is-a.dev](https://nival.is-a.dev)
-- Enlace a GitHub: [github.com/Beto18v](https://github.com/Beto18v)
-- Campo en `package.json`: `"author": "Nicolas Valenzuela (Beto18v)"`
+## Nota de compatibilidad Node 22.14
 
----
+- El repo incluye `patches/undici@8.13.1.patch` para Node 22.14.0.
+- No eliminar esta sección del `pnpm-workspace.yaml`.
 
-## 🛑 5. Política de Git y Ciclo de Entrega (MANDATORIO)
+## Docs individuales por extensión
 
-1. **Prohibido Commit o Push Autónomo:**
-   - Ningún agente de IA debe ejecutar `git commit`, `git push` o alterar el historial remoto de Git sin autorización expresa y puntual del usuario en el chat.
-2. **Ciclo de Verificación Obligatorio al Final de Cada Implementación:**
-   - Al finalizar cualquier tarea, implementación o corrección, es mandatorio ejecutar la verificación local:
-     - **Tests:** Ejecutar pruebas unitarias (`pnpm test` o `pnpm --filter <ext> test`).
-     - **Typecheck / Lint:** Validar tipos de TypeScript y sintaxis (`pnpm run compile` o `tsc --noEmit`).
-     - **Build:** Asegurar la compilación limpia sin errores (`pnpm run build` o `pnpm --filter <ext> run build`).
-3. **Sugerencia de Commit:**
-   - Si todas las verificaciones pasan exitosamente (cero errores), el agente debe resumir los cambios y **sugerir el comando y mensaje de commit semántico** (ej. `feat(md-for-ai): ...` o `fix(...): ...`), esperando la confirmación y autorización explícita del usuario antes de ejecutarlo.
+- Cada extensión tiene su propio `AGENTS.md` con reglas específicas.
+- Leer ese archivo antes de trabajar en cualquier extensión.

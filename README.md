@@ -1,46 +1,38 @@
-# 🌐 Browser Extensions Suite
+# Browser Extensions Suite
 
-<div align="center">
-
-**Modern, production-ready, ultra-fast browser extensions built with WXT, Manifest V3, TypeScript, and Vite.**
+Suite de extensiones de productividad para investigadores, desarrolladores y usuarios de IA. 100% local, sin servidores.
 
 [![Manifest V3](https://img.shields.io/badge/Manifest_V3-Chrome_%7C_Edge_%7C_Brave-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/)
-[![WXT Framework](https://img.shields.io/badge/WXT-Framework-6366f1?logo=vite&logoColor=white)](https://wxt.dev/)
+[![WXT](https://img.shields.io/badge/WXT-0.21.5-6366f1?logo=vite&logoColor=white)](https://wxt.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-workspace-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-</div>
+## Extensiones
 
----
+| Extensión | Directorio | Descripción | Shortcut | Estado |
+|---|---|---|---|---|
+| Prompt Drawer | `extensions/prompt-drawer/` | Biblioteca local de prompts para IA | `Alt+Shift+V` | v1.0 publicada |
+| Research Vault | `extensions/research-vault/` | Captura y organiza clips de investigación web | `Alt+Shift+R` | En desarrollo |
 
-## 📦 Extensions in this Suite
-
-*(Currently initializing dedicated extensions ready for the Chrome Web Store).*
-
----
-
-## ⚡ Packaging & Automation
+## Comandos del monorepo
 
 ```bash
-npm run pack
+pnpm install
+pnpm run build              # todas las extensiones
+pnpm run zip                # todas en ZIP
+pnpm --filter <name> test
+pnpm --filter <name> run build
 ```
 
-Builds and packages all extensions located in `extensions/` into standard store ZIP archives in `releases/`.
+## Compatibilidad Node.js
 
----
+En Node.js 22.14.0, el soporte de `zstd` fue introducido parcialmente sin `zlib.createZstdDecompress`, lo que provoca un `TypeError` en `undici` al ejecutar Vitest y JSDOM. El repositorio incluye `patches/undici@8.13.1.patch` (configurado en `pnpm-workspace.yaml`) para proteger contra ese fallo y garantizar la ejecución local de tests en Node 22.14.0.
 
-## 🛠️ Environment & Compatibility Notes
+## Autor
 
-### Node.js 22.14 Compatibility Patch (`patches/undici@8.13.1.patch`)
-In Node.js 22.14.0, zstd support was partially introduced, but `zlib.createZstdDecompress` was not implemented until Node.js 22.15.0+. When packages such as `undici` (transitive dependency of JSDOM and Vitest) attempt to bind `zlib.createZstdDecompress.bind(zlib)`, an unhandled `TypeError` is thrown.
+**Nicolas Valenzuela** — *AI & Full-Stack Software Engineer*
 
-The repository includes a patch via `pnpm-workspace.yaml` (`patchedDependencies` -> `patches/undici@8.13.1.patch`) that guards against `undefined` for `createZstdDecompress`. This ensures reliable local execution of unit tests and DOM simulations on Node 22.14 environments.
-
----
-
-## 👤 Author
-
-**Nicolas Valenzuela** — *AI & Full-Stack Software Engineer*  
-- Portfolio: [nival.is-a.dev](https://nival.is-a.dev)  
-- GitHub: [@Beto18v](https://github.com/Beto18v)  
-- LinkedIn: [in/beto18v](https://www.linkedin.com/in/beto18v/)
+- Portfolio: [nival.is-a.dev](https://nival.is-a.dev)
+- GitHub: [github.com/Beto18v](https://github.com/Beto18v)
+- LinkedIn: [linkedin.com/in/beto18v](https://www.linkedin.com/in/beto18v)
