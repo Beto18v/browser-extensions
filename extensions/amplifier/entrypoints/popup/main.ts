@@ -377,7 +377,10 @@ async function loadAudibleTabs() {
 
 // Inicialización
 async function init() {
-  // 1. Cargar preferencias guardadas
+  // 1. Configurar eventos de la UI siempre de inmediato (idioma, tema, shortcuts)
+  setupEventListeners();
+
+  // 2. Cargar preferencias guardadas
   const stored = await getStoredSettings();
   settings = stored;
   applyTheme(settings.theme);
@@ -388,7 +391,7 @@ async function init() {
     (SUPPORTED_LOCALES.includes(detectBrowserLocale()) ? detectBrowserLocale() : 'en');
   applyTranslations(initialLocale);
 
-  // 2. Obtener pestaña activa
+  // 3. Obtener pestaña activa
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab && tab.id) {
     currentTabId = tab.id;
@@ -404,7 +407,10 @@ async function init() {
     }
   }
 
-  // Si es página restringida
+  // 4. Cargar lista de pestañas audibles
+  loadAudibleTabs();
+
+  // 5. Si es página restringida, deshabilitar únicamente los controles de audio
   if (!capturable) {
     elements.restrictedBanner.classList.remove('hidden');
     elements.volumeSlider.disabled = true;
@@ -412,11 +418,10 @@ async function init() {
     elements.btnReset.disabled = true;
     elements.presetButtons.forEach((b) => (b.disabled = true));
     elements.toggleLimiter.disabled = true;
-    loadAudibleTabs();
     return;
   }
 
-  // 3. Consultar estado en vivo del background o perfil guardado del dominio
+  // 6. Consultar estado en vivo del background o perfil guardado del dominio
   chrome.runtime.sendMessage(
     { type: 'GET_TAB_STATE', tabId: currentTabId },
     async (res) => {
@@ -433,12 +438,6 @@ async function init() {
       updateUI();
     }
   );
-
-  // 4. Cargar lista de pestañas audibles
-  loadAudibleTabs();
-
-  // 5. Configurar eventos de la UI
-  setupEventListeners();
 }
 
 function setupEventListeners() {
