@@ -5,6 +5,7 @@ const OFFSCREEN_DOCUMENT_PATH = 'offscreen.html';
 
 // Estado en memoria de pestañas administradas por el Service Worker
 const tabStates = new Map<number, TabAudioState>();
+const tabCaptureLocks = new Map<number, Promise<any>>();
 
 let creatingOffscreenPromise: Promise<void> | null = null;
 
@@ -95,14 +96,20 @@ export default defineBackground(() => {
 
     if (message.type === 'GET_AUDIBLE_TABS') {
       chrome.tabs.query({ audible: true }).then((tabs) => {
-        const audibleInfo = tabs.map((t) => ({
-          id: t.id!,
-          title: t.title || 'Untitled',
-          url: t.url || '',
-          favIconUrl: t.favIconUrl,
-          audible: t.audible ?? false,
-          mutedInfo: t.mutedInfo,
-        }));
+        const audibleInfo = tabs.map((t) => {
+          const tabState = tabStates.get(t.id!);
+          const isMuted = tabState?.muted ?? (t.mutedInfo?.muted ?? false);
+          return {
+            id: t.id!,
+            title: t.title || 'Untitled',
+            url: t.url || '',
+            favIconUrl: t.favIconUrl,
+            audible: t.audible ?? false,
+            mutedInfo: {
+              muted: isMuted,
+            },
+          };
+        });
         sendResponse({ tabs: audibleInfo });
       });
       return true;
@@ -110,7 +117,8 @@ export default defineBackground(() => {
 
     if (message.type === 'SET_TAB_AUDIO') {
       const { tabId, volume, preset, limiter, muted } = message;
-      (async () => {
+
+      const runSetTabAudio = async () => {
         const clampedVol = clampVolume(volume);
         const existing = tabStates.get(tabId) || {
           tabId,
@@ -128,7 +136,7 @@ export default defineBackground(() => {
         const finalLimiter = typeof limiter === 'boolean' ? limiter : existing.limiter;
         const prevVol = isMuted ? (existing.volume > 0 ? existing.volume : existing.previousVolume) : clampedVol;
 
-        // Si ya estaba marcado como activo en offscreen, intentamos actualizar parámetros
+        // Si ya está activo en offscreen, intentamos actualizar parámetros
         if (existing.active) {
           existing.volume = finalVol;
           existing.preset = finalPreset;
@@ -148,40 +156,71 @@ export default defineBackground(() => {
               limiter: finalLimiter,
             });
 
-            // Si el offscreen responde que no encontró el pipeline activo (se desconectó), procedemos a re-capturar
+            // Si el offscreen responde exitoso, terminamos
             if (updateRes && !updateRes.notFound) {
-              sendResponse({ success: true, state: existing });
-              return;
+              return { success: true, state: existing };
             }
           } catch {
-            // El offscreen document no estaba listo o se cerró, procedemos a re-capturar
+            // El offscreen document no estaba listo o se cerró
           }
         }
 
-        // Si el volumen es 100% y preset normal y no mute, no hace falta capturar
-        if (finalVol === 100 && finalPreset === 'normal' && !isMuted) {
+        // Si el volumen es 100% y preset normal y no mute, y no está capturado, no hace falta capturar
+        if (finalVol === 100 && finalPreset === 'normal' && !isMuted && !existing.active) {
           tabStates.delete(tabId);
           updateBadge(tabId, 100, false, false);
-          sendResponse({ success: true, state: null });
-          return;
+          return { success: true, state: null };
         }
 
-        // Iniciar o reiniciar captura
+        // Iniciar captura garantizando que no haya otra captura o stream zombie para esta pestaña
         try {
           await ensureOffscreenDocument();
 
-          const streamId = await new Promise<string>((resolve, reject) => {
-            chrome.tabCapture.getMediaStreamId({ targetTabId: tabId }, (id) => {
-              const err = chrome.runtime.lastError;
-              if (err) {
-                reject(new Error(err.message || 'tabCapture failed'));
-              } else if (!id) {
-                reject(new Error('Failed to obtain stream ID'));
-              } else {
-                resolve(id);
-              }
+          let streamId: string;
+          try {
+            streamId = await new Promise<string>((resolve, reject) => {
+              chrome.tabCapture.getMediaStreamId({ targetTabId: tabId }, (id) => {
+                const err = chrome.runtime.lastError;
+                if (err) {
+                  reject(new Error(err.message || 'tabCapture failed'));
+                } else if (!id) {
+                  reject(new Error('Failed to obtain stream ID'));
+                } else {
+                  resolve(id);
+                }
+              });
             });
-          });
+          } catch (captureErr: any) {
+            // Si Chrome dice "Cannot capture a tab with an active stream", significa que el stream previo
+            // aún no se ha detenido en el offscreen. Forzamos su detención y reintentamos una vez.
+            if (captureErr?.message?.includes('Cannot capture a tab with an active stream')) {
+              try {
+                await chrome.runtime.sendMessage({
+                  type: 'STOP_OFFSCREEN_AUDIO',
+                  tabId,
+                });
+              } catch {
+                // Ignore
+              }
+              // Esperar un breve instante para que Chrome libere el handle interno
+              await new Promise((r) => setTimeout(r, 100));
+
+              streamId = await new Promise<string>((resolve, reject) => {
+                chrome.tabCapture.getMediaStreamId({ targetTabId: tabId }, (id) => {
+                  const err = chrome.runtime.lastError;
+                  if (err) {
+                    reject(new Error(err.message || 'tabCapture retry failed'));
+                  } else if (!id) {
+                    reject(new Error('Failed to obtain stream ID on retry'));
+                  } else {
+                    resolve(id);
+                  }
+                });
+              });
+            } else {
+              throw captureErr;
+            }
+          }
 
           const newState: TabAudioState = {
             tabId,
@@ -205,13 +244,29 @@ export default defineBackground(() => {
             limiter: finalLimiter,
           });
 
-          sendResponse({ success: true, state: newState });
+          return { success: true, state: newState };
         } catch (err: any) {
           const errMsg = err?.message || String(err);
           console.error(`[Amplifier Tab Background] Failed to capture tab ${tabId}: ${errMsg}`);
-          sendResponse({ success: false, error: errMsg });
+          return { success: false, error: errMsg };
         }
-      })();
+      };
+
+      // Serializar ejecuciones concurrentes por pestaña
+      const previousPromise = tabCaptureLocks.get(tabId) || Promise.resolve();
+      const currentPromise = previousPromise
+        .catch(() => {})
+        .then(runSetTabAudio)
+        .then((result) => {
+          sendResponse(result);
+        })
+        .finally(() => {
+          if (tabCaptureLocks.get(tabId) === currentPromise) {
+            tabCaptureLocks.delete(tabId);
+          }
+        });
+
+      tabCaptureLocks.set(tabId, currentPromise);
       return true;
     }
 

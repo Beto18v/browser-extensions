@@ -209,18 +209,37 @@ function updateUI() {
   });
 }
 
+let audioChangeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+let lastEmittedState: string | null = null;
+
 // Envío y persistencia de audio
-function emitAudioChange(options?: { immediateStorage?: boolean }) {
+function emitAudioChange(options?: { immediateStorage?: boolean; debounceMs?: number }) {
   if (!currentTabId || !capturable) return;
 
-  chrome.runtime.sendMessage({
-    type: 'SET_TAB_AUDIO',
-    tabId: currentTabId,
-    volume: state.volume,
-    preset: state.preset,
-    limiter: state.limiter,
-    muted: state.muted,
-  });
+  const stateKey = `${state.volume}_${state.preset}_${state.limiter}_${state.muted}`;
+
+  const send = () => {
+    if (lastEmittedState === stateKey) return;
+    lastEmittedState = stateKey;
+
+    chrome.runtime.sendMessage({
+      type: 'SET_TAB_AUDIO',
+      tabId: currentTabId,
+      volume: state.volume,
+      preset: state.preset,
+      limiter: state.limiter,
+      muted: state.muted,
+    });
+  };
+
+  const delay = options?.debounceMs ?? 60;
+  if (options?.immediateStorage || delay === 0) {
+    if (audioChangeDebounceTimer) clearTimeout(audioChangeDebounceTimer);
+    send();
+  } else {
+    if (audioChangeDebounceTimer) clearTimeout(audioChangeDebounceTimer);
+    audioChangeDebounceTimer = setTimeout(send, delay);
+  }
 
   if (settings.rememberByDomain && activeDomain) {
     if (options?.immediateStorage) {
@@ -294,8 +313,21 @@ function renderAudibleTabs(tabs: AudibleTabInfo[]) {
 
     btnMute.addEventListener('click', async (e) => {
       e.stopPropagation();
-      await chrome.tabs.update(tab.id, { muted: !isMuted });
-      loadAudibleTabs();
+      const nextMuted = !isMuted;
+      // 1. Notificar al background para pestañas capturadas
+      chrome.runtime.sendMessage({
+        type: 'SET_TAB_AUDIO',
+        tabId: tab.id,
+        volume: nextMuted ? 0 : 100,
+        muted: nextMuted,
+      });
+      // 2. Actualizar también la propiedad nativa de la pestaña en Chrome
+      try {
+        await chrome.tabs.update(tab.id, { muted: nextMuted });
+      } catch {
+        // Ignorar si la pestaña ya cerró
+      }
+      setTimeout(loadAudibleTabs, 100);
     });
 
     actions.appendChild(btnMute);
