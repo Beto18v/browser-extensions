@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amplifier Tab</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-brand">
+          <svg class="header-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 3"/>
+            <path d="M7 12a5 5 0 0 1 10 0"/>
+          </svg>
+          <h1 id="text-app-title" class="header-title">Amplifier Tab</h1>
+        </div>
+        <div class="header-actions">
+          <select id="select-locale" class="select-locale" aria-label="Language">
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+            <option value="pt_BR">PT</option>
+            <option value="fr">FR</option>
+            <option value="de">DE</option>
+            <option value="ja">JA</option>
+          </select>
+          <button id="btn-theme-toggle" class="btn-icon" aria-label="Toggle theme">
+            <!-- Sun / Moon SVG icons swapped in CSS or JS -->
+            <svg class="theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Deck -->
+      <main id="main-deck" class="main-deck">
+        <div class="deck-topbar">
+          <div class="site-info">
+            <span id="current-domain" class="current-domain">example.com</span>
+            <span id="meter-badge" class="meter-badge zone-safe">Standard</span>
+          </div>
+          <div class="deck-actions">
+            <button id="btn-mute" class="btn-action btn-mute" aria-label="Mute">
+              <svg class="icon-mute-state" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path class="wave-normal" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                <path class="wave-loud" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              </svg>
+            </button>
+            <button id="btn-reset" class="btn-action btn-reset" aria-label="Reset to 100%">100%</button>
+          </div>
+        </div>
+
+        <div class="volume-display-container">
+          <div id="volume-display" class="volume-display zone-safe">100%</div>
+        </div>
+
+        <!-- Segmented 12-block VU Meter -->
+        <div class="vu-meter" id="vu-meter" aria-hidden="true">
+          <div class="meter-block" data-index="1"></div>
+          <div class="meter-block" data-index="2"></div>
+          <div class="meter-block" data-index="3"></div>
+          <div class="meter-block" data-index="4"></div>
+          <div class="meter-block" data-index="5"></div>
+          <div class="meter-block" data-index="6"></div>
+          <div class="meter-block" data-index="7"></div>
+          <div class="meter-block" data-index="8"></div>
+          <div class="meter-block" data-index="9"></div>
+          <div class="meter-block" data-index="10"></div>
+          <div class="meter-block" data-index="11"></div>
+          <div class="meter-block" data-index="12"></div>
+        </div>
+
+        <!-- Slider -->
+        <div class="slider-wrapper">
+          <input
+            id="volume-slider"
+            class="volume-slider"
+            type="range"
+            min="0"
+            max="600"
+            step="5"
+            value="100"
+            autofocus
+            aria-label="Volume slider"
+          />
+          <div class="slider-ticks">
+            <span>0%</span>
+            <span>100%</span>
+            <span>300%</span>
+            <span>600%</span>
+          </div>
+        </div>
+
+        <!-- Quick Jump Buttons -->
+        <div class="quick-jumps">
+          <button type="button" class="btn-jump" data-jump="0">0%</button>
+          <button type="button" class="btn-jump" data-jump="100">100%</button>
+          <button type="button" class="btn-jump" data-jump="200">200%</button>
+          <button type="button" class="btn-jump" data-jump="400">400%</button>
+        </div>
+
+        <!-- Tone Presets -->
+        <section class="presets-section">
+          <h2 id="text-presets-heading" class="section-title">Tone Presets</h2>
+          <div class="presets-grid">
+            <button type="button" class="btn-preset active" data-preset="normal" aria-pressed="true">
+              <span class="preset-name" id="text-preset-normal">Normal</span>
+              <span class="preset-desc" id="text-preset-normal-desc">Flat studio</span>
+            </button>
+            <button type="button" class="btn-preset" data-preset="voice" aria-pressed="false">
+              <span class="preset-name" id="text-preset-voice">Voice</span>
+              <span class="preset-desc" id="text-preset-voice-desc">Speech boost</span>
+            </button>
+            <button type="button" class="btn-preset" data-preset="bass" aria-pressed="false">
+              <span class="preset-name" id="text-preset-bass">Bass</span>
+              <span class="preset-desc" id="text-preset-bass-desc">Deep punch</span>
+            </button>
+            <button type="button" class="btn-preset" data-preset="night" aria-pressed="false">
+              <span class="preset-name" id="text-preset-night">Night</span>
+              <span class="preset-desc" id="text-preset-night-desc">Dynamic limit</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Protections & Memory Switches -->
+        <section class="switches-section">
+          <div class="switch-row">
+            <div class="switch-info">
+              <span id="text-limiter-label" class="switch-label">Anti-distortion limiter</span>
+              <span id="text-limiter-desc" class="switch-sub">Prevents clipping distortion</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-limiter" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="switch-row">
+            <div class="switch-info">
+              <span id="text-remember-label" class="switch-label">Remember for this site</span>
+              <span id="text-remember-desc" class="switch-sub">Applies automatically next time</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-remember" checked />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </section>
+      </main>
+
+      <!-- Restricted Banner (Hidden by default) -->
+      <div id="restricted-banner" class="restricted-banner hidden">
+        <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div class="banner-text">
+          <strong id="text-restricted-title">Audio capture unavailable</strong>
+          <p id="text-restricted-desc">Internal browser pages do not permit audio capture.</p>
+        </div>
+      </div>
+
+      <!-- Audible Tabs Section -->
+      <section id="audible-section" class="audible-section">
+        <h2 id="text-audible-title" class="section-title">Audible Tabs</h2>
+        <ul id="audible-list" class="audible-list"></ul>
+        <div id="audible-empty" class="audible-empty">
+          <span id="text-audible-empty">No other tabs are currently playing audio.</span>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <button id="btn-shortcut-settings" class="btn-shortcut" type="button">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" ry="2"/>
+            <path d="M6 8h.001M10 8h.001M14 8h.001M18 8h.001M8 12h.001M12 12h.001M16 12h.001M10 16h4"/>
+          </svg>
+          <span id="text-shortcut-hint">Add shortcut</span>
+        </button>
+        <div class="footer-author">
+          <span>Created by <a href="https://nival.is-a.dev" target="_blank" rel="noopener noreferrer" class="author-link">Nicolas Valenzuela</a></span>
+        </div>
+      </footer>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

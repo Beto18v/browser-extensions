@@ -1,0 +1,18 @@
+{
+  "atExtName": {
+    "message": "Amplificador de Pestaña",
+    "description": "Título de la extensión"
+  },
+  "atExtShortName": {
+    "message": "Amplificador",
+    "description": "Título corto de la extensión"
+  },
+  "atExtDescription": {
+    "message": "Aumenta el volumen de cada pestaña hasta 600% con limitador anti-distorsión, presets de tono y memoria por sitio.",
+    "description": "Descripción de la tienda"
+  },
+  "atCommandOpen": {
+    "message": "Abrir Amplificador de Pestaña",
+    "description": "Descripción del atajo de teclado"
+  }
+}

@@ -11,7 +11,11 @@
     "build:prompt-drawer": "pnpm --filter prompt-drawer run build",
     "zip:prompt-drawer": "pnpm --filter prompt-drawer run zip",
     "dev:prompt-drawer": "pnpm --filter prompt-drawer run dev",
-    "test:prompt-drawer": "pnpm --filter prompt-drawer run test"
+    "test:prompt-drawer": "pnpm --filter prompt-drawer run test",
+    "build:amplifier-tab": "pnpm --filter amplifier-tab run build",
+    "zip:amplifier-tab": "pnpm --filter amplifier-tab run zip",
+    "dev:amplifier-tab": "pnpm --filter amplifier-tab run dev",
+    "test:amplifier-tab": "pnpm --filter amplifier-tab run test"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

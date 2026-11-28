@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="28" fill="#1C1B18"/>
+  <!-- Dial/Knob outer ring -->
+  <circle cx="64" cy="64" r="46" fill="none" stroke="#36342E" stroke-width="4"/>
+  <!-- Dial body -->
+  <circle cx="64" cy="64" r="38" fill="#22211E" stroke="#D97706" stroke-width="3"/>
+  <!-- Sound wave arcs (brass/amber) -->
+  <path d="M 38 64 A 26 26 0 0 1 90 64" fill="none" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 46 64 A 18 18 0 0 1 82 64" fill="none" stroke="#D97706" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Indicator needle pointing to boost -->
+  <line x1="64" y1="64" x2="80" y2="40" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+  <!-- Center metallic hub -->
+  <circle cx="64" cy="64" r="7" fill="#F59E0B"/>
+</svg>

@@ -1,0 +1,18 @@
+{
+  "atExtName": {
+    "message": "Amplificateur d'Onglet",
+    "description": "Titre de l'extension"
+  },
+  "atExtShortName": {
+    "message": "Amplificateur",
+    "description": "Titre court de l'extension"
+  },
+  "atExtDescription": {
+    "message": "Augmentez le volume de chaque onglet jusqu'à 600 % avec limiteur anti-distorsion, profils audio et mémoire par site.",
+    "description": "Description du magasin"
+  },
+  "atCommandOpen": {
+    "message": "Ouvrir l'Amplificateur d'Onglet",
+    "description": "Description du raccourci clavier"
+  }
+}

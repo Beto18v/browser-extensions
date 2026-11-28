@@ -1,0 +1,18 @@
+{
+  "atExtName": {
+    "message": "Amplifier Tab",
+    "description": "Extension title"
+  },
+  "atExtShortName": {
+    "message": "Amplifier Tab",
+    "description": "Short extension title"
+  },
+  "atExtDescription": {
+    "message": "Boost tab volume up to 600% with anti-distortion limiter, tone presets, and per-site memory.",
+    "description": "Store description"
+  },
+  "atCommandOpen": {
+    "message": "Open Amplifier Tab",
+    "description": "Shortcut command description"
+  }
+}

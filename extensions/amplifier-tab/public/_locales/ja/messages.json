@@ -1,0 +1,18 @@
+{
+  "atExtName": {
+    "message": "タブアンプ",
+    "description": "拡張機能の名称"
+  },
+  "atExtShortName": {
+    "message": "タブアンプ",
+    "description": "短い名称"
+  },
+  "atExtDescription": {
+    "message": "歪み防止リミッター、音質プリセット、サイト別メモリ機能付きでタブの音量を最大600%まで増幅。",
+    "description": "ストアの説明"
+  },
+  "atCommandOpen": {
+    "message": "タブアンプを開く",
+    "description": "ショートカットの説明"
+  }
+}

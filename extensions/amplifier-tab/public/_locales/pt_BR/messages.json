@@ -1,0 +1,18 @@
+{
+  "atExtName": {
+    "message": "Amplificador de Aba",
+    "description": "Título da extensão"
+  },
+  "atExtShortName": {
+    "message": "Amplificador",
+    "description": "Título curto da extensão"
+  },
+  "atExtDescription": {
+    "message": "Aumente o volume de cada aba até 600% com limitador antidistorção, perfis de som e memória por site.",
+    "description": "Descrição da loja"
+  },
+  "atCommandOpen": {
+    "message": "Abrir Amplificador de Aba",
+    "description": "Descrição do atalho de teclado"
+  }
+}
