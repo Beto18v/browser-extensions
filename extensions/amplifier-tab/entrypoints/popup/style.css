@@ -90,6 +90,123 @@ body {
   gap: 6px;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Locale Custom Dropdown with Flags */
+.locale-dropdown-wrapper {
+  position: relative;
+}
+
+.btn-locale-trigger {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  transition: border-color 0.15s;
+}
+
+.btn-locale-trigger:hover,
+.btn-locale-trigger:focus-visible {
+  border-color: var(--accent);
+}
+
+.locale-flag {
+  display: flex;
+  align-items: center;
+}
+
+.flag-icon {
+  border-radius: 2px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.dropdown-arrow {
+  color: var(--text-muted);
+  transition: transform 0.15s;
+}
+
+.locale-dropdown-wrapper.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.locale-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  list-style: none;
+  padding: 4px;
+  margin: 0;
+  width: 130px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.locale-menu.hidden {
+  display: none;
+}
+
+.locale-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text);
+  transition: background-color 0.1s;
+}
+
+.locale-item:hover {
+  background: var(--surface-subtle);
+}
+
+.locale-item.selected {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.locale-name {
+  flex: 1;
+}
+
+.locale-tag {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.locale-item.selected .locale-tag {
+  color: var(--accent);
+}
+
 .select-locale {
   background: var(--surface);
   color: var(--text);

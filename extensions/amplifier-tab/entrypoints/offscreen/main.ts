@@ -25,6 +25,13 @@ async function initTabAudio(
   stopTabAudio(tabId);
 
   try {
+    // 1. Iniciar el AudioContext de inmediato en paralelo
+    const context = new AudioContext({ latencyHint: 'interactive' });
+    if (context.state === 'suspended') {
+      context.resume().catch(() => {});
+    }
+
+    // 2. Obtener el stream de audio de la pestaña
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         // @ts-expect-error chromeMediaSource is a Chrome-specific constraint
@@ -36,7 +43,6 @@ async function initTabAudio(
       video: false,
     });
 
-    const context = new AudioContext();
     const source = context.createMediaStreamSource(stream);
 
     // Biquad filters para EQ de 3 bandas
@@ -71,10 +77,6 @@ async function initTabAudio(
       compressor.connect(context.destination);
     } else {
       gain.connect(context.destination);
-    }
-
-    if (context.state === 'suspended') {
-      await context.resume();
     }
 
     activePipelines.set(tabId, {
@@ -131,6 +133,16 @@ function applyPresetConfig(
   }
 }
 
+function updateTabGain(tabId: number, volume: number) {
+  const pipeline = activePipelines.get(tabId);
+  if (!pipeline) return;
+  const { context, gain } = pipeline;
+  const targetGain = volumeToGain(volume);
+  gain.gain.cancelScheduledValues(context.currentTime);
+  // Transición ultrarrápida de 5ms: instantánea para el oído humano pero libre de chasquidos
+  gain.gain.setTargetAtTime(targetGain, context.currentTime, 0.005);
+}
+
 function updateTabAudio(
   tabId: number,
   volume: number,
@@ -142,10 +154,9 @@ function updateTabAudio(
 
   const { context, gain, lowShelf, peaking, highShelf, compressor } = pipeline;
 
-  // Actualizar Gain de forma suave para evitar chasquidos (clicks)
   const targetGain = volumeToGain(volume);
   gain.gain.cancelScheduledValues(context.currentTime);
-  gain.gain.setTargetAtTime(targetGain, context.currentTime, 0.02);
+  gain.gain.setTargetAtTime(targetGain, context.currentTime, 0.005);
 
   // Actualizar filtros EQ y compresor
   applyPresetConfig(lowShelf, peaking, highShelf, compressor, presetId, limiter);
@@ -212,12 +223,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendRe
       sendResponse({ success: false, notFound: true });
       return false;
     }
-    updateTabAudio(
-      message.tabId,
-      message.volume,
-      message.preset,
-      message.limiter
-    );
+    // Si solo es cambio de volumen (mismo preset y limiter), actualizamos únicamente el Gain para máxima velocidad
+    updateTabGain(message.tabId, message.volume);
     sendResponse({ success: true });
     return false;
   }

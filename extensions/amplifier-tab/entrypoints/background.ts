@@ -86,8 +86,15 @@ function updateBadge(tabId: number, volume: number, muted: boolean, active: bool
 }
 
 export default defineBackground(() => {
+  // Precargar el documento offscreen al iniciar el Service Worker
+  ensureOffscreenDocument().catch(() => {});
+
   // Manejo de mensajes
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message.type === 'PRELOAD_OFFSCREEN') {
+      ensureOffscreenDocument().then(() => sendResponse({ success: true }));
+      return true;
+    }
     if (message.type === 'GET_TAB_STATE') {
       const state = tabStates.get(message.tabId) || null;
       sendResponse({ state });
@@ -118,6 +125,49 @@ export default defineBackground(() => {
     if (message.type === 'SET_TAB_AUDIO') {
       const { tabId, volume, preset, limiter, muted } = message;
 
+      const existing = tabStates.get(tabId);
+      // Camino ultrarrápido (Fast-path): si la pestaña ya tiene captura activa en offscreen,
+      // actualizamos el audio inmediatamente sin pasar por colas ni locks de tabCapture
+      if (existing && existing.active) {
+        const clampedVol = clampVolume(volume);
+        const isMuted = typeof muted === 'boolean' ? muted : existing.muted;
+        const finalVol = isMuted ? 0 : clampedVol;
+        const finalPreset = preset || existing.preset;
+        const finalLimiter = typeof limiter === 'boolean' ? limiter : existing.limiter;
+        const prevVol = isMuted ? (existing.volume > 0 ? existing.volume : existing.previousVolume) : clampedVol;
+
+        existing.volume = finalVol;
+        existing.preset = finalPreset;
+        existing.limiter = finalLimiter;
+        existing.muted = isMuted;
+        existing.previousVolume = prevVol;
+        tabStates.set(tabId, existing);
+
+        updateBadge(tabId, finalVol, isMuted, true);
+
+        chrome.runtime.sendMessage({
+          type: 'UPDATE_OFFSCREEN_AUDIO',
+          tabId,
+          volume: finalVol,
+          preset: finalPreset,
+          limiter: finalLimiter,
+        }).then((updateRes) => {
+          if (updateRes && !updateRes.notFound) {
+            sendResponse({ success: true, state: existing });
+          } else {
+            // Si el offscreen se cerró, marcarlo como inactivo para que la próxima interacción capture
+            existing.active = false;
+            sendResponse({ success: false, notFound: true });
+          }
+        }).catch(() => {
+          existing.active = false;
+          sendResponse({ success: false });
+        });
+
+        return true;
+      }
+
+      // Camino de inicialización de captura (con lock para prevenir carreras al capturar por primera vez)
       const runSetTabAudio = async () => {
         const clampedVol = clampVolume(volume);
         const existing = tabStates.get(tabId) || {

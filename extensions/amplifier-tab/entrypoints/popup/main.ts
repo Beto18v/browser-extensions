@@ -26,6 +26,12 @@ import type {
 const elements = {
   // Locale & Theme
   selectLocale: document.getElementById('select-locale') as HTMLSelectElement,
+  localeDropdownWrapper: document.getElementById('locale-dropdown-wrapper') as HTMLElement,
+  btnLocaleTrigger: document.getElementById('btn-locale-trigger') as HTMLButtonElement,
+  currentLocaleFlag: document.getElementById('current-locale-flag') as HTMLElement,
+  currentLocaleCode: document.getElementById('current-locale-code') as HTMLElement,
+  localeMenu: document.getElementById('locale-menu') as HTMLUListElement,
+  localeItems: document.querySelectorAll<HTMLLIElement>('.locale-item'),
   btnThemeToggle: document.getElementById('btn-theme-toggle') as HTMLButtonElement,
 
   // Textos para i18n
@@ -109,6 +115,38 @@ function applyTheme(theme: Theme) {
 function applyTranslations(locale: Locale) {
   settings.locale = locale;
   elements.selectLocale.value = locale;
+
+  // Actualizar bandera y código en el botón del dropdown
+  const codeMap: Record<Locale, string> = {
+    en: 'EN',
+    es: 'ES',
+    pt_BR: 'PT',
+    fr: 'FR',
+    de: 'DE',
+    ja: 'JA',
+  };
+  elements.currentLocaleCode.textContent = codeMap[locale] || 'EN';
+
+  // Copiar el SVG de la bandera seleccionada hacia el trigger
+  const selectedItem = document.querySelector(`.locale-item[data-locale="${locale}"]`);
+  if (selectedItem) {
+    const flagSvg = selectedItem.querySelector('.flag-icon');
+    if (flagSvg) {
+      elements.currentLocaleFlag.innerHTML = flagSvg.outerHTML;
+    }
+  }
+
+  // Marcar ítem activo en el menú
+  elements.localeItems.forEach((item) => {
+    const itemLoc = item.getAttribute('data-locale');
+    if (itemLoc === locale) {
+      item.classList.add('selected');
+      item.setAttribute('aria-selected', 'true');
+    } else {
+      item.classList.remove('selected');
+      item.setAttribute('aria-selected', 'false');
+    }
+  });
 
   elements.textAppTitle.textContent = t(locale, 'appTitle');
   elements.btnMute.title = state.muted ? t(locale, 'unmute') : t(locale, 'mute');
@@ -209,11 +247,11 @@ function updateUI() {
   });
 }
 
-let audioChangeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+let audioChangeRafId: number | null = null;
 let lastEmittedState: string | null = null;
 
 // Envío y persistencia de audio
-function emitAudioChange(options?: { immediateStorage?: boolean; debounceMs?: number }) {
+function emitAudioChange(options?: { immediateStorage?: boolean }) {
   if (!currentTabId || !capturable) return;
 
   const stateKey = `${state.volume}_${state.preset}_${state.limiter}_${state.muted}`;
@@ -232,13 +270,17 @@ function emitAudioChange(options?: { immediateStorage?: boolean; debounceMs?: nu
     });
   };
 
-  const delay = options?.debounceMs ?? 60;
-  if (options?.immediateStorage || delay === 0) {
-    if (audioChangeDebounceTimer) clearTimeout(audioChangeDebounceTimer);
+  // Si es un cambio inmediato (botones de salto, mute, preset) lo enviamos directo;
+  // si es arrastre del slider, usamos requestAnimationFrame para tasa de refresco a 60-120fps en tiempo real sin saturar
+  if (options?.immediateStorage) {
+    if (audioChangeRafId) cancelAnimationFrame(audioChangeRafId);
     send();
   } else {
-    if (audioChangeDebounceTimer) clearTimeout(audioChangeDebounceTimer);
-    audioChangeDebounceTimer = setTimeout(send, delay);
+    if (audioChangeRafId) cancelAnimationFrame(audioChangeRafId);
+    audioChangeRafId = requestAnimationFrame(() => {
+      send();
+      audioChangeRafId = null;
+    });
   }
 
   if (settings.rememberByDomain && activeDomain) {
@@ -366,6 +408,12 @@ async function init() {
     state.tabId = tab.id;
     activeDomain = extractDomain(currentUrl);
     capturable = isCapturableUrl(currentUrl);
+
+    // Precargar el documento offscreen en segundo plano al abrir el popup
+    // de modo que cuando el usuario mueva el slider ya esté 100% montado
+    if (capturable) {
+      chrome.runtime.sendMessage({ type: 'PRELOAD_OFFSCREEN' });
+    }
   }
 
   // Si es página restringida
@@ -406,7 +454,45 @@ async function init() {
 }
 
 function setupEventListeners() {
-  // Selector de idioma
+  // Selector de idioma personalizado (Dropdown con banderas)
+  if (elements.btnLocaleTrigger && elements.localeMenu) {
+    elements.btnLocaleTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = !elements.localeMenu.classList.contains('hidden');
+      if (isOpen) {
+        elements.localeMenu.classList.add('hidden');
+        elements.localeDropdownWrapper.classList.remove('open');
+        elements.btnLocaleTrigger.setAttribute('aria-expanded', 'false');
+      } else {
+        elements.localeMenu.classList.remove('hidden');
+        elements.localeDropdownWrapper.classList.add('open');
+        elements.btnLocaleTrigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    elements.localeItems.forEach((item) => {
+      item.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const newLocale = item.getAttribute('data-locale') as Locale;
+        if (newLocale && SUPPORTED_LOCALES.includes(newLocale)) {
+          applyTranslations(newLocale);
+          await saveStoredSettings({ locale: newLocale });
+        }
+        elements.localeMenu.classList.add('hidden');
+        elements.localeDropdownWrapper.classList.remove('open');
+        elements.btnLocaleTrigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // Cerrar al hacer clic fuera
+    document.addEventListener('click', () => {
+      elements.localeMenu.classList.add('hidden');
+      elements.localeDropdownWrapper.classList.remove('open');
+      elements.btnLocaleTrigger.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  // Selector de idioma nativo (fallback de accesibilidad)
   elements.selectLocale.addEventListener('change', async () => {
     const newLocale = elements.selectLocale.value as Locale;
     applyTranslations(newLocale);
