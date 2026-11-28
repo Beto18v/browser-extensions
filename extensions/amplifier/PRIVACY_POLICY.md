@@ -2,7 +2,7 @@
 
 **Last updated:** November 28, 2026  
 **Developer:** Nicolas Valenzuela (Beto18v) — [nival.is-a.dev](https://nival.is-a.dev) | [github.com/Beto18v](https://github.com/Beto18v)  
-**Contact:** [nicolasalberto18@hotmail.com](mailto:nicolasalberto18@hotmail.com)
+**Contact:** [nicolasalbertov18@gmail.com](mailto:nicolasalbertov18@gmail.com)
 
 ---
 

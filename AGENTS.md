@@ -1,47 +1,73 @@
 # AI Agent Guidelines — Browser Extensions Suite
 
-Reglas globales obligatorias para cualquier agente o desarrollador que trabaje en este monorepo.
+Mandatory global rules for any agent or developer contributing to this monorepo.
 
-## Regla de Oro — Git
+## Golden Rule — Git
 
-- Queda **estrictamente prohibido** ejecutar `git commit` o `git push` sin autorización explícita del usuario en el chat.
-- Ciclo obligatorio al terminar cada tarea: **test → typecheck → build**.
-- Al finalizar con todas las verificaciones en verde, sugerir el comando y mensaje de commit semántico pero **no ejecutarlo**.
+- It is **strictly prohibited** to run `git commit` or `git push` without explicit user authorization in the chat.
+- Mandatory verification cycle after completing every task: **test → typecheck → build**.
+- When all checks pass in green, suggest the semantic commit command and commit message, but **do not execute it**.
 
-## Estructura del Monorepo
+## Monorepo Architecture
 
-- Cada extensión vive en `extensions/<nombre>/`, es autónoma y tiene su propio `package.json`, `AGENTS.md`, `README.md`, tests y build.
-- Paquete compartido: `packages/shared/` → `@browser-extensions/shared` (i18n, tipos).
-- El workspace raíz solo orquesta con `pnpm` scripts.
+- Each extension lives in `extensions/<name>/`, self-contained with its own `package.json`, `AGENTS.md`, `README.md`, tests, and build outputs.
+- Shared package: `packages/shared/` → `@browser-extensions/shared` (i18n helpers, shared types).
+- Root workspace orchestrates builds and tasks via `pnpm` workspace scripts.
 
-## Stack Tecnológico
+## Tech Stack
 
-- **Framework y plataforma:** WXT 0.21.5 + Vite + TypeScript 5.9 + Manifest V3 (Chrome, Edge, Brave).
-- **UI:** Sin frameworks de componentes (React, Vue, Svelte). TypeScript + DOM nativo.
-- **Tests:** Vitest + jsdom.
+- **Framework & Platform:** WXT 0.21.5 + Vite + TypeScript 5.9 + Chrome Manifest V3 (Chrome, Edge, Brave).
+- **UI:** Zero component frameworks (no React, Vue, or Svelte). Pure TypeScript + native DOM.
+- **Testing:** Vitest + jsdom.
 
-## Filosofía Local-First
+## Local-First Philosophy
 
-- Cero backend propio. Almacenamiento 100% local en `chrome.storage.local` / `IndexedDB`.
-- Sin API keys ni credenciales privadas en el código fuente. Si se integra IA externa opcional, aplicar el patrón **BYOK (Bring Your Own Key)**.
+- Zero proprietary backend. 100% local persistence via `chrome.storage.local` / `IndexedDB`.
+- Zero API keys or private credentials in source code. Any optional external AI integration follows the **BYOK (Bring Your Own Key)** pattern.
 
-## Rendimiento
+## Performance & Rendering
 
-- Render en frame 0. Sin layout shift. Persistencia no bloqueante.
-- Autofocus en el input principal al abrir cada extensión.
+- Frame 0 render. Zero layout shift. Non-blocking asynchronous persistence.
+- Autofocus on primary input or control upon popup open.
 
-## Marca Personal
+## Standard 6-Locale System (MANDATORY)
 
-- `"author": "Nicolas Valenzuela (Beto18v)"` en cada `package.json`.
-- Pie de UI: nombre + enlace a [nival.is-a.dev](https://nival.is-a.dev) y [github.com/Beto18v](https://github.com/Beto18v).
-- Sin emojis en ninguna interfaz.
+Every extension in this suite must symmetrically support the 6 canonical locales established in **Amplifier**:
 
-## Nota de compatibilidad Node 22.14
+1. **`en`** — English (Default)
+2. **`es`** — Spanish (Español)
+3. **`pt_BR`** — Portuguese (Português do Brasil)
+4. **`fr`** — French (Français)
+5. **`de`** — German (Deutsch)
+6. **`ja`** — Japanese (日本語)
 
-- El repo incluye `patches/undici@8.13.1.patch` para Node 22.14.0.
-- No eliminar esta sección del `pnpm-workspace.yaml`.
+- Translation keys must match symmetrically across all 6 locales with safe fallback to `en`.
+- Store metadata must be mirrored in `public/_locales/{en,es,pt_BR,fr,de,ja}/messages.json`.
+- UI language selectors must use clean, vector SVG country flags with no external CDN dependencies and zero Unicode emojis.
 
-## Docs individuales por extensión
+## Personal Branding & Support
 
-- Cada extensión tiene su propio `AGENTS.md` con reglas específicas.
-- Leer ese archivo antes de trabajar en cualquier extensión.
+- `"author": "Nicolas Valenzuela (Beto18v)"` in every `package.json`.
+- UI footer: developer name with link to [nival.is-a.dev](https://nival.is-a.dev) and [github.com/Beto18v](https://github.com/Beto18v).
+- Official developer support email: `nicolasalbertov18@gmail.com`.
+- Official bug tracker: `https://github.com/Beto18v/browser-extensions/issues`.
+- Zero Unicode emojis in any user interface (use clean vector SVGs exclusively).
+
+## Chrome Web Store & Privacy Standards
+
+- **Mandatory Privacy Policy:** Every extension in `extensions/<name>/` MUST include a `PRIVACY_POLICY.md` file symmetrically covering all 6 supported locales.
+- **Privacy Policy Requirements:**
+  - Formal 100% Local-First declaration: zero telemetry, zero analytics, zero remote database connections.
+  - Granular technical justification for every Manifest V3 permission requested.
+  - Official developer contact details: name, portfolio ([nival.is-a.dev](https://nival.is-a.dev)), and official email (`nicolasalbertov18@gmail.com`).
+- **Store Promotional Assets:** Every extension must provide a standalone generator in `assets/webstore-promo.html` exporting official 1280 × 800 px canvas promotional screenshots.
+
+## Node.js 22.14 Compatibility
+
+- The repository includes `patches/undici@8.13.1.patch` to address incomplete `zstd` support in Node.js 22.14.0 during Vitest/jsdom execution.
+- Never remove this patch from `pnpm-workspace.yaml`.
+
+## Individual Extension Documentation
+
+- Every extension maintains its own `AGENTS.md` and `README.md` with domain-specific architecture and guidelines.
+- Always read the extension-specific `AGENTS.md` before making changes to any workspace.

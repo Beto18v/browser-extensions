@@ -1,107 +1,102 @@
 # Prompt Drawer
 
-Biblioteca local de prompts para usuarios de asistentes de IA (ChatGPT, Claude, Gemini) que permite buscar, completar variables y copiar cualquier instrucción al portapapeles en menos de 5 segundos.
+Offline prompt manager for AI assistant users (ChatGPT, Claude, Gemini) allowing you to search, fill in dynamic variables, and copy instructions to the clipboard in under 5 seconds.
 
-## Captura de pantalla
+## Screenshot
 
 <!-- screenshot -->
 
-## Por qué esta extensión
+## Why This Extension
 
-- Los prompts de uso diario suelen quedar dispersos en notas externas, documentos o archivos de texto donde buscarlos y copiarlos toma entre 1 y 2 minutos.
-- Reutilizar una misma instrucción con pequeños cambios obliga a editar manualmente el texto antes de pegarlo en el asistente de IA.
-- Dependencias en la nube, cuentas o sincronizaciones innecesarias añaden latencia y exponen contenido privado de trabajo.
+- Everyday prompts often end up scattered across external notes, documents, or text files where locating and copying them takes 1 to 2 minutes.
+- Reusing the same prompt template with minor adjustments forces tedious manual edits before pasting into an AI assistant.
+- Cloud dependencies, mandatory user accounts, and remote syncing introduce unnecessary latency and expose sensitive proprietary prompts.
 
-## Funciones principales
+## Key Features
 
-- **Búsqueda instantánea:** Filtrado local sin dependencias externas con prioridad por coincidencia exacta en título, subcadena en título, etiquetas y contenido del cuerpo.
-- **Variables dinámicas:** Detección y resolución automática de marcadores `{{variable}}` mediante un formulario rápido al momento de copiar.
-- **Prompts fijados (pinned):** Fija prompts frecuentes para mantenerlos siempre al inicio de la lista, incluso al filtrar resultados.
-- **Etiquetas (tags):** Organización mediante etiquetas separadas por comas visibles en cada tarjeta e indexadas en la búsqueda.
-- **Categorías con color:** Categorías creadas por el propio usuario con nombre y color personalizado desde el editor; filtro superior combinable con la búsqueda de texto e indicador de color en cada tarjeta.
-- **Plantillas de ejemplo integradas:** Conjunto de 5 plantillas generales (correos, resúmenes, estudio, agenda de reunión y revisión de texto) disponibles en español e inglés.
-- **i18n ES/EN y tema claro/oscuro:** Interfaz bilingüe con detección automática del idioma del navegador y sincronización de plantillas no modificadas, además de cambio manual entre tema claro y oscuro con valor por defecto del navegador.
+- **Instant Search:** Local-first query engine with prioritized matching: exact title, title substring, tags, and body content.
+- **Dynamic Variables:** Automatic detection and interactive resolution of `{{variable}}` placeholders via a fast popup modal at copy time.
+- **Pinned Prompts:** Pin frequent prompts to keep them at the top of the list, even when filtering.
+- **Tag Organization:** Organize prompts with comma-separated tags, displayed on each card and indexed in real-time search.
+- **Custom Color Categories:** Create and assign categories with custom labels and hex colors; filter prompts via top category chips.
+- **Built-in Templates:** 5 starter templates for emails, summaries, learning, meeting agendas, and code reviews.
+- **Bilingual & Light/Dark Theme:** Automatic browser locale detection, manual language toggle, and system-adaptive light/dark theme.
 
-## Variables dinámicas
+## Dynamic Variable Resolution
 
-Al incluir texto entre llaves dobles dentro del cuerpo de un prompt, `extractVariables` detecta automáticamente cada marcador mientras escribes en el editor.
+When including text inside double curly braces within a prompt body, `extractVariables` automatically detects each token as you type in the editor.
 
-Ejemplo real:
+Real-world example:
 
 ```text
-Revisa este código en {{lenguaje}} enfocándote en {{aspecto}} y sugiere mejoras concretas.
+Review this code in {{language}} focusing on {{aspect}} and suggest concrete improvements.
 ```
 
-Al pulsar **Copiar** (o `Enter` sobre el elemento seleccionado):
+When clicking **Copy** (or pressing `Enter` on the selected prompt):
 
-1. `hasVariables` detecta que el prompt contiene `{{lenguaje}}` y `{{aspecto}}`.
-2. Se abre el modal **Completar variables** con un campo de texto por cada variable y el foco automático en el primero (`lenguaje`).
-3. Al confirmar con **Copiar** o `Enter`, `resolveVariables` sustituye cada marcador por los valores introducidos, copia el texto final al portapapeles, incrementa el contador de uso (`usageCount`) y muestra la confirmación **Copiado**.
+1. `hasVariables` identifies `{{language}}` and `{{aspect}}`.
+2. The **Fill Variables** modal opens with dedicated input fields and autofocuses on the first field (`language`).
+3. Upon confirming with **Copy** or `Enter`, `resolveVariables` injects the provided values into the template, writes the resulting text to the clipboard, increments `usageCount`, and shows the **Copied** confirmation toast.
 
 ## Tech Stack
 
-| Categoría | Tecnología | Versión | Rol |
+| Category | Technology | Version | Role |
 |---|---|---|---|
-| Framework de extensión | WXT | 0.21.5 | Build, manifest MV3, HMR en dev |
-| Lenguaje | TypeScript | 5.9.3 | Tipado estático en todo el proyecto |
-| Bundler | Vite | 8.3.8 | Compilación y tree-shaking |
-| Plataforma | Chrome Extension Manifest V3 | - | Runtime del navegador |
-| Almacenamiento | chrome.storage.local | - | Persistencia 100% local, sin backend |
-| Testing | Vitest + jsdom | 5.1.1 / 31.0.1 | 22 tests unitarios |
-| Iconos | @wxt-dev/auto-icons + sharp | 2.0.0 | Generación de iconos desde SVG fuente |
-| i18n | Sistema propio (@browser-extensions/shared) | - | ES/EN, locale guardado en storage |
-| Portapapeles | navigator.clipboard (clipboardWrite) | - | Copia al portapapeles sin red |
+| Extension Framework | WXT | 0.21.5 | Build system, MV3 manifest generation, development HMR |
+| Language | TypeScript | 5.9.3 | Strict static typing across all modules |
+| Bundler | Vite | 8.3.8 | Fast bundling and tree-shaking |
+| Platform | Chrome Extension Manifest V3 | - | Browser runtime |
+| Storage | chrome.storage.local | - | 100% local persistence, zero backend |
+| Testing | Vitest + jsdom | 5.1.1 / 31.0.1 | 22 comprehensive unit tests |
+| Asset Icons | @wxt-dev/auto-icons + sharp | 2.0.0 | Icon generation from source SVG |
+| i18n | Internal engine (@browser-extensions/shared) | - | Locale persistence in storage |
+| Clipboard | navigator.clipboard (clipboardWrite) | - | Secure local clipboard writing |
 
-Sin frameworks de UI (React/Vue/Svelte). Interfaz construida con TypeScript y DOM nativo para cero dependencias en runtime.
+Built with zero component frameworks (no React, Vue, or Svelte). The user interface is pure TypeScript and native DOM for zero runtime bundle overhead.
 
-## Cómo instalar en modo desarrollador
+## Developer Installation
 
-1. Instala las dependencias desde la raíz del monorepo y compila la extensión:
+1. Install dependencies and compile the extension from the monorepo root:
    ```bash
    pnpm install
    pnpm --filter prompt-drawer run build
    ```
-2. Abre `chrome://extensions/` en Google Chrome y activa el **Modo de desarrollador** en la esquina superior derecha.
-3. Haz clic en **Cargar descomprimida**.
-4. Selecciona la carpeta `extensions/prompt-drawer/.output/chrome-mv3`.
+2. Navigate to `chrome://extensions/` in Google Chrome and enable **Developer mode** in the top-right corner.
+3. Click **Load unpacked** (*Cargar descomprimida*).
+4. Select the build directory: `extensions/prompt-drawer/.output/chrome-mv3`.
 
-## Comandos disponibles
+## Available Scripts
 
-Scripts definidos en `extensions/prompt-drawer/package.json`:
+Defined in `extensions/prompt-drawer/package.json`:
 
-| Comando | Resultado |
+| Command | Action |
 |---|---|
-| `dev` (`wxt`) | Inicia el servidor de desarrollo con recarga en caliente (HMR) para Chrome. |
-| `build` (`wxt build`) | Genera el bundle de producción en `.output/chrome-mv3/`. |
-| `zip` (`wxt zip`) | Compila la extensión y empaqueta el archivo distribuible `.output/prompt-drawer-1.0.0-chrome.zip`. |
-| `compile` (`tsc --noEmit`) | Ejecuta la verificación estática de tipos de TypeScript sin emitir archivos. |
-| `test` (`vitest run`) | Ejecuta la suite completa de 22 tests unitarios en una sola pasada. |
-| `test:watch` (`vitest`) | Ejecuta Vitest en modo observación continua durante el desarrollo. |
-| `postinstall` (`wxt prepare`) | Genera los tipos y configuración interna de WXT en `.wxt/`. |
+| `dev` (`wxt`) | Starts Vite development server with Hot Module Replacement (HMR). |
+| `build` (`wxt build`) | Generates production bundle in `.output/chrome-mv3/`. |
+| `zip` (`wxt zip`) | Compiles and packages release `.output/prompt-drawer-1.0.0-chrome.zip`. |
+| `compile` (`tsc --noEmit`) | Runs TypeScript type check without emitting files. |
+| `test` (`vitest run`) | Executes the complete suite of 22 unit tests. |
+| `test:watch` (`vitest`) | Runs tests in continuous watch mode. |
 
-## Desarrollo local
+## Keyboard Shortcuts
 
-Ejecuta estos comandos desde la raíz del monorepo:
+- Default shortcut: `Alt+Shift+V` (Windows, Linux, macOS).
+- Customize via `chrome://extensions/shortcuts` or click the shortcut indicator in the popup footer.
+- Within the popup: `↑` / `↓` navigates items, `Enter` copies the selected prompt, `Esc` dismisses modals or editors.
 
-```bash
-pnpm --filter prompt-drawer run dev
-pnpm --filter prompt-drawer test
-pnpm --filter prompt-drawer run compile
-pnpm --filter prompt-drawer run zip
-```
+## Privacy & Security
 
-## Atajo de teclado
+Prompt Drawer operates 100% locally in your browser. It makes zero outbound network requests, gathers no telemetry, and uses no remote databases. All prompts, categories, and settings are stored strictly in `chrome.storage.local`.
 
-- Atajo predeterminado: `Alt+Shift+V` (en Windows, Linux y macOS).
-- Para personalizarlo, abre `chrome://extensions/shortcuts` en Chrome (o haz clic en el indicador del atajo en el pie del popup) y asigna una nueva combinación en el comando **Abrir Prompt Drawer** / **Open Prompt Drawer**.
-- Dentro del popup: `↑` / `↓` navegan por la lista, `Enter` copia el elemento enfocado y `Esc` cierra el modal, la ayuda o el editor.
+Read the complete policy at:  
+👉 [**PRIVACY_POLICY.md**](PRIVACY_POLICY.md)
 
-## Privacidad
+## License & Author
 
-Prompt Drawer funciona de forma 100% local en el navegador del usuario, sin llamadas de red, sin telemetría y sin servidores propios ni de terceros. Todos los prompts, etiquetas, contadores de uso y preferencias de idioma o tema se almacenan únicamente en `chrome.storage.local` mediante los permisos mínimos `storage` y `clipboardWrite`.
+Distributed under the [MIT License](LICENSE).
 
-## Licencia y autor
-
-Licencia MIT.
-
-**Nicolas Valenzuela (Beto18v)** | [nival.is-a.dev](https://nival.is-a.dev) | [github.com/Beto18v](https://github.com/Beto18v)
+Authored by **[Nicolas Valenzuela](https://nival.is-a.dev)** (*Beto18v*).
+- **Portfolio:** [nival.is-a.dev](https://nival.is-a.dev)
+- **Email:** [nicolasalbertov18@gmail.com](mailto:nicolasalbertov18@gmail.com)
+- **GitHub:** [github.com/Beto18v](https://github.com/Beto18v)
+- **Issues & Support:** [github.com/Beto18v/browser-extensions/issues](https://github.com/Beto18v/browser-extensions/issues)

@@ -1,26 +1,26 @@
 # Shade — Agent Guidelines
 
-Reglas específicas para el desarrollo y mantenimiento de **Shade** (control de luz y modo oscuro granular por sitio web).
-Antes de hacer cambios, leer también el `AGENTS.md` de la raíz del monorepo.
+Specific engineering rules and architectural standards for developing and maintaining **Shade** (per-site light and dark mode manager).  
+Before making any changes, review the global guidelines in `AGENTS.md` at the repository root.
 
-## Identidad
+## Identity
 
-- **Nombre de la app (UI y tienda):** Shade
-- **Directorio:** `extensions/shade-tab/`
-- **pnpm filter name:** `shade-tab`
-- **Shortcut:** `Alt+Shift+S`
+- **UI & Store Name:** Shade
+- **Directory:** `extensions/shade/`
+- **pnpm filter name:** `shade`
+- **Default Shortcut:** `Alt+Shift+S`
 
-## Arquitectura (Manifest V3)
+## Architecture (Manifest V3)
 
-- **Popup (`entrypoints/popup/`):** TypeScript + DOM nativo (sin frameworks). Render en frame 0.
-- **Content Script (`entrypoints/content.ts`):** Se ejecuta en `document_start` para evitar el destello blanco al cargar. Lee el perfil guardado del dominio en `chrome.storage.local`, inyecta/actualiza una única etiqueta `<style id="shade-tab-engine">` y escucha mensajes en vivo del popup para reflejar sliders sin latencia.
-- **Background Service Worker (`entrypoints/background.ts`):** Ligero; sincroniza el indicador visual del icono (badge sutil cuando el dominio actual tiene Shade activo).
-- **Módulos puros (`src/lib/`):** `types.ts`, `domain.ts`, `presets.ts`, `css-engine.ts`, `storage.ts`, `i18n.ts`, `flags.ts`. 100% testeables en Vitest sin depender de un navegador real.
+- **Popup UI (`entrypoints/popup/`):** Pure TypeScript + native DOM (zero component frameworks). Frame 0 render.
+- **Content Script (`entrypoints/content.ts`):** Runs at `document_start` to eliminate white flashes on page loads. Reads the active domain profile from `chrome.storage.local`, injects/updates a single `<style id="shade-engine">` tag, and listens for live messages from the popup to adjust sliders with zero latency.
+- **Background Service Worker (`entrypoints/background.ts`):** Lightweight coordinator; synchronizes the tab icon badge when Shade is active on the current domain.
+- **Pure Library Modules (`src/lib/`):** `types.ts`, `domain.ts`, `presets.ts`, `css-engine.ts`, `storage.ts`, `i18n.ts`, `flags.ts`. 100% testable in Vitest without requiring a real browser.
 
-## Principio Opt-In por Dominio
+## Opt-In Per-Domain Principle
 
-- Por defecto, **ningún sitio web se modifica** hasta que el usuario active el interruptor principal o seleccione un preset/slider en ese dominio.
-- Cada dominio guarda su propio perfil independiente (`enabled`, `preset`, `brightness`, `contrast`, `warmth`, `darkenCanvas`) en `chrome.storage.local`.
+- By default, **no website is modified** until the user explicitly toggles the main switch or selects a preset on that domain.
+- Each domain saves its own independent profile (`enabled`, `preset`, `brightness`, `contrast`, `warmth`, `darkenCanvas`) in `chrome.storage.local`.
 
 ## Storage Keys
 
@@ -29,39 +29,39 @@ STORAGE_DOMAINS_KEY = 'st_domains_v1'
 STORAGE_SETTINGS_KEY = 'st_settings_v1'
 ```
 
-No cambiar estas claves sin migración explícita.
+Never alter these keys without an explicit schema migration strategy.
 
-## Sistema de Idiomas (6 locales con banderas SVG)
+## Canonical 6-Locale System with Vector SVG Flags
 
-- Idiomas soportados: `en` (default), `es`, `pt_BR`, `fr`, `de`, `ja`.
-- El diccionario vive en `src/lib/i18n.ts` y las banderas SVG inline viven en `src/lib/flags.ts` (propios de esta extensión para no alterar `packages/shared` ni otras extensiones del monorepo).
-- **Selector de idioma con banderas SVG:** Usar un dropdown personalizado accesible (`#locale-switcher`) que muestre la bandera en SVG limpio (`16×12px`) junto al código/nombre del idioma. **Nunca usar emojis Unicode de banderas**, ya que en Windows se renderizan como letras planas (`US`, `ES`) y rompen la regla de cero emojis.
-- Los metadatos de la tienda viven en `public/_locales/{en,es,pt_BR,fr,de,ja}/messages.json` manteniendo siempre el nombre de marca **Shade**.
-- Todas las claves deben existir simétricamente en los 6 idiomas. Fallback seguro a `en`.
+- Symmetrically supported locales: `en` (default), `es`, `pt_BR`, `fr`, `de`, `ja`.
+- Internal dictionary lives in `src/lib/i18n.ts` and standalone SVG flags live in `src/lib/flags.ts`.
+- **Vector SVG Flag Selector:** Custom accessible dropdown (`#locale-switcher`) displaying standalone vector flags (`16×12px`). Never use Unicode flag emojis, as Windows renders them as raw letters (`US`, `ES`) breaking visual quality.
+- Store metadata lives in `public/_locales/{en,es,pt_BR,fr,de,ja}/messages.json`.
+- All dictionary keys must exist symmetrically across all 6 locales with safe fallback to `en`.
 
-## Reglas de UI — Leica Crimson + Hardware Táctil
+## UI & Design Rules — Leica Crimson + Tactile Hardware
 
-- Estética inspirada en hardware óptico e industrial (*Leica* / *Nothing OS* / *Teenage Engineering*):
-  - Superficies planas mate, bordes finos de precisión (`1px`), micro-puntos en esquinas y separadores punteados.
-  - Sliders con **escala milimetrada** (tick marks) y lectura numérica con `font-variant-numeric: tabular-nums`.
-  - Indicador **LED rojo carmesí** (`#E11D48`) con brillo sutil solo en el preset o control activo.
-- Tema claro y oscuro con detección inicial del sistema + selector manual persistido.
-- **Cero emojis Unicode** en toda la interfaz, código o metadatos. Solo iconos y banderas SVG limpios.
-- Navegación por teclado: `Space` o `Enter` en el toggle principal, `1–4` cambian preset, `R` resetea sliders al preset activo, `C` alterna el oscurecimiento de lienzo (`darkenCanvas`) cuando está disponible, `Escape` cierra el menú de idiomas.
+- Aesthetic inspired by precision optical and industrial hardware (*Leica*, *Nothing OS*, *Teenage Engineering*):
+  - Flat matte surfaces, 1px precision borders, corner micro-dots, and dotted separators.
+  - Sliders with millimeter tick marks and tabular readings (`font-variant-numeric: tabular-nums`).
+  - Crimson LED accent (`#E11D48`) glowing subtly only on active controls.
+- Light and Dark modes with automatic system detection + persisted manual override.
+- Zero Unicode emojis across all interfaces and code.
+- Keyboard navigation: `Space` or `Enter` toggles main switch, `1–4` selects presets, `R` resets sliders to preset defaults, `C` toggles canvas darkening (`darkenCanvas`), `Escape` dismisses menus.
 
-## Marca Personal
+## Personal Branding
 
-- `"author": "Nicolas Valenzuela (Beto18v)"` en `package.json`.
-- Footer con acceso directo al atajo (`chrome://extensions/shortcuts`) + nombre y enlaces a `https://nival.is-a.dev` y `https://github.com/Beto18v`.
+- `"author": "Nicolas Valenzuela (Beto18v)"` in `package.json`.
+- Popup footer includes direct link to `chrome://extensions/shortcuts` and author link to [nival.is-a.dev](https://nival.is-a.dev) and [github.com/Beto18v](https://github.com/Beto18v).
 
-## Regla de Oro — Git y Verificación
+## Golden Rule — Git & Verification
 
-- Prohibido ejecutar `git commit` o `git push` sin autorización explícita del usuario.
-- Ciclo obligatorio al terminar cualquier cambio:
+- Prohibited from executing `git commit` or `git push` without explicit user authorization in chat.
+- Mandatory verification cycle after every modification:
 
 ```bash
-pnpm --filter shade-tab test
-pnpm --filter shade-tab run compile
-pnpm --filter shade-tab run build
-pnpm --filter shade-tab run zip
+pnpm --filter shade test
+pnpm --filter shade run compile
+pnpm --filter shade run build
+pnpm --filter shade run zip
 ```

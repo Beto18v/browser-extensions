@@ -1,20 +1,21 @@
 # Prompt Drawer — Agent Guidelines
 
-Reglas específicas para el desarrollo y mantenimiento de **Prompt Drawer**.
+Specific engineering rules and architectural standards for developing and maintaining **Prompt Drawer**.  
+Before making any changes, review the global guidelines in `AGENTS.md` at the repository root.
 
-## Identidad
+## Identity
 
-- **Directorio:** `extensions/prompt-drawer/`
+- **Directory:** `extensions/prompt-drawer/`
 - **pnpm filter name:** `prompt-drawer`
-- **UI name:** Prompt Drawer
-- **Shortcut:** `Alt+Shift+V`
+- **UI Name:** Prompt Drawer
+- **Default Shortcut:** `Alt+Shift+V`
 
-## Arquitectura
+## Architecture
 
-- Solo Popup + `chrome.storage.local`. Sin content script. Sin background worker.
-- Módulos en `src/lib/`: `storage.ts`, `search.ts`, `variables.ts`, `examples.ts`.
+- Pure Popup UI + `chrome.storage.local`. Zero content scripts. Zero background service worker.
+- Pure library modules in `src/lib/`: `storage.ts`, `search.ts`, `variables.ts`, `examples.ts`.
 
-## Storage keys
+## Storage Keys
 
 ```ts
 STORAGE_PROMPTS_KEY = 'pv_prompts_v1'
@@ -22,26 +23,26 @@ STORAGE_SETTINGS_KEY = 'pv_settings_v1'
 STORAGE_CATEGORIES_KEY = 'pv_categories_v1'
 ```
 
-No cambiar estas claves sin migración explícita.
+Never alter these keys without an explicit schema migration strategy.
 
-## Sistema de variables
+## Variable System
 
-- Variables `{{nombre}}` detectadas con `/\{\{(\w+)\}\}/g`.
-- Al copiar un prompt con variables → modal para completarlas antes de copiar.
+- Variables `{{name}}` detected via `/\{\{(\w+)\}\}/g`.
+- When copying a prompt containing variables → triggers interactive modal to fill in parameters before writing to clipboard.
 
-## Reglas de UI
+## UI Rules
 
-- Autofocus en búsqueda al abrir.
-- Teclado: flechas `↑` `↓` navegan lista, `Enter` copia, `Esc` cierra modal/editor.
-- Confirmación de borrado inline: botón → `"¿Seguro?"` durante 3s. Sin `window.confirm`.
-- Render en frame 0: cargar prompts de storage y renderizar lista antes del primer frame.
+- Autofocus on search input upon opening popup.
+- Keyboard navigation: arrow keys `↑` / `↓` navigate the prompt list, `Enter` copies selected item, `Esc` dismisses modal/editor.
+- Inline deletion confirmation: button toggles to `"Sure?"` for 3 seconds. Never use blocking `window.confirm`.
+- Frame 0 render: load prompts from local storage and render initial view before first frame paint.
 
-## Categorías con color
+## Colorized Categories
 
-- El usuario crea categorías con nombre + color hex.
-- Los chips de categoría aparecen en la parte superior para filtrar la lista.
+- Users can create categories with custom name + hex color code.
+- Category chips render across the top for one-click list filtering.
 
-## Tests y verificación
+## Verification & Build
 
 ```bash
 pnpm --filter prompt-drawer test

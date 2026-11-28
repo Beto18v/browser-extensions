@@ -1,85 +1,144 @@
 # Amplifier
 
-Amplificador y ecualizador de audio por pestaña que permite elevar el volumen hasta **600%** con limitador dinámico anti-distorsión, presets de tono analógicos en 1 clic y memoria persistente por sitio web.
+Tab-level audio amplifier and studio equalizer that elevates volume up to **600%** with a dynamic anti-distortion limiter, one-click acoustic tone presets, and persistent per-website volume memory.
 
-## Por qué esta extensión
+## Why This Extension
 
-- Muchos videos, grabaciones, clases en vivo, podcasts o reuniones virtuales tienen niveles de audio sumamente bajos e inaudibles incluso con el volumen del sistema al 100%.
-- La mayoría de boosters de pestañas genéricos generan saturación digital agresiva y chasquidos (clipping) al superar el volumen estándar.
-- Otras extensiones requieren ajustar el volumen manualmente cada vez que se abre una pestaña en el mismo sitio.
-- Amplifier Tab soluciona esto con una arquitectura segura en Manifest V3 mediante `tabCapture`, Web Audio API con `DynamicsCompressorNode`, 4 presets de ecualización y almacenamiento 100% local por dominio.
+- Many recorded lectures, video streams, podcasts, and remote conferences suffer from low audio levels that remain inaudible even with system volume at 100%.
+- Generic volume boosters frequently cause harsh digital distortion, buzzing, and clipping artifacts when boosting above standard levels.
+- Conventional extensions require manual adjustments every time a new tab is opened on the same website.
+- **Amplifier** solves this through a robust Chrome Manifest V3 architecture combining `tabCapture`, an offscreen Web Audio API pipeline with `DynamicsCompressorNode`, 4 studio tone presets, and 100% local persistence per domain.
 
-## Funciones principales
+## Key Features
 
-- **Amplificación de 0% a 600%:** Control preciso mediante slider, pasos de teclado o saltos rápidos (0%, 100%, 200%, 400%).
-- **Limitador suave anti-distorsión:** `DynamicsCompressorNode` calibrado para prevenir la saturación agresiva por encima del 100%.
-- **4 Presets de tono de estudio:**
-  - **Normal:** Respuesta plana y balanceada.
-  - **Voz:** Realce en frecuencias de inteligibilidad vocal (2.2 kHz) para clases y videollamadas.
-  - **Graves:** Refuerzo profundo en bajas frecuencias (100 Hz).
-  - **Noche:** Rango dinámico comprimido para ver contenido de noche sin sobresaltos.
-- **Memoria automática por sitio web:** Guarda automáticamente en `chrome.storage.local` el volumen y preset elegido para dominios frecuentes (ej. `youtube.com`).
-- **Panel de pestañas audibles:** Visualiza en tiempo real las otras pestañas del navegador que están reproduciendo sonido para silenciarlas o cambiar a ellas en 1 clic.
-- **Paleta Acoustic Slate (Light & Dark):** Diseño inspirado en monitores de estudio analógicos con fondo pizarra frío, acentos terracota mate (`#E05A47`), vúmetro segmentado y tipografía con números tabulares para evitar saltos.
-- **Internacionalización en 6 idiomas con banderas:** Selector con banderas SVG vectoriales para inglés, español, portugués brasileño, francés, alemán y japonés.
+- **0% to 600% Amplification:** Precision slider control, fine-tuned keyboard steps, and instant jump presets (100%, 200%, 300%, 600%).
+- **Anti-Distortion Limiter:** Calibrated `DynamicsCompressorNode` prevents harsh clipping and audio saturation when exceeding 100%.
+- **4 Studio Tone Presets:**
+  - **Normal:** Flat, transparent response.
+  - **Voice:** Vocal intelligibility boost (+9dB @ 2.4 kHz) optimized for speech, podcasts, and courses.
+  - **Bass:** Deep low-frequency reinforcement (+11dB @ 110 Hz) for music and cinema.
+  - **Night:** Dynamic range compression for balanced night-time listening without sudden volume spikes.
+- **Automatic Per-Site Memory:** Automatically remembers custom volume levels and tone presets per domain (e.g. `youtube.com`) in `chrome.storage.local`.
+- **Multi-Tab Audio Manager:** Inspects all background tabs playing sound in real time, allowing one-click muting or tab switching.
+- **Acoustic Slate Palette (Light & Dark):** Inspired by analog studio audio hardware with cold slate surfaces, matte terracotta accents (`#E05A47`), a 12-segment responsive VU meter, and tabular numbers for zero layout jitter.
+- **Canonical 6-Locale System with Vector Flags:** Native translations in English, Spanish, Brazilian Portuguese, French, German, and Japanese.
 
-## Atajos de teclado
+## System Architecture (Manifest V3 + Web Audio API)
 
-- **Atajo personalizable:** Haz clic en **Agregar atajo** en el pie del popup para configurarlo en `chrome://extensions/shortcuts` (por defecto `Alt+Shift+A`).
-- **Dentro del popup:**
-  - `←` / `→` o `↓` / `↑`: Ajuste fino de volumen (±5%).
-  - `Shift + ←` / `Shift + →`: Ajuste rápido (±25%).
-  - `M`: Silenciar / reactivar sonido.
-  - `R`: Restablecer a 100% y preset normal.
-  - `1`, `2`, `3`, `4`: Cambiar a los presets Normal, Voz, Graves o Noche.
+Amplifier implements a decoupled architecture to satisfy the process isolation model of **Chrome Manifest V3**, where background service workers lack direct access to DOM audio APIs:
+
+```mermaid
+flowchart TD
+    subgraph UI ["Popup UI (TypeScript + Native DOM)"]
+        A[Slider & Presets] -->|requestAnimationFrame ~60-120fps| B[Audio Event Emitter]
+        C[Theme & Locale Toggles] -->|Instant in Frame 0| D[DOM Local Render]
+    end
+
+    subgraph SW ["Background Service Worker (Coordinator)"]
+        B -->|SET_TAB_AUDIO / GET_TAB_STATE| E[Lifecycle & State Manager]
+        E -->|chrome.tabCapture.getMediaStreamId| F[Stream Capture with Mutex Locks]
+        E -->|Badge Text & Color| G["Tab Badge (e.g. 250%)"]
+    end
+
+    subgraph OFF ["Offscreen Document (Web Audio Engine)"]
+        F -->|Stream ID| H[MediaStreamAudioSourceNode]
+        H --> I["BiquadFilterNode (EQ: Voice / Bass)"]
+        I --> J["DynamicsCompressorNode (Anti-distortion Limiter)"]
+        J --> K["GainNode (Volume Multiplier 0% - 600%)"]
+        K --> L["audioCtx.destination (Speakers)"]
+    end
+
+    subgraph DB ["Local-First Persistence"]
+        E -->|at_domains_v1| M[(chrome.storage.local)]
+        E -->|at_settings_v1| M
+    end
+```
+
+### Engineering Highlights (Portfolio Reference)
+
+1. **Anti-Clipping Audio Processing Pipeline:**  
+   Rather than applying a naive multiplicative gain that destroys audio clarity, Amplifier chains a calibrated `DynamicsCompressorNode` (`threshold: -24dB`, `ratio: 12`, `attack: 0.003s`, `release: 0.25s`) immediately prior to the `GainNode`. This allows boosting signals up to 6x while preserving dynamic clarity and preventing speaker clipping.
+
+2. **Frame 0 Execution & Real-Time Responsiveness:**  
+   - Audio contexts are initialized with `latencyHint: 'interactive'` and employ 5ms exponential ramps (`gain.setTargetAtTime`) to eliminate acoustic clicks and pops during volume transitions.
+   - Slider dragging synchronizes through `requestAnimationFrame`, sending gain updates directly through a fast-path without blocking the user interface.
+   - The offscreen document is proactively prewarmed upon popup launch to eliminate the initial 1-second cold-start delay on first boost.
+
+3. **Concurrency Mutex for `tabCapture`:**  
+   Chrome rejects redundant capture calls on active streams (`Cannot capture a tab with an active stream`). Amplifier manages an asynchronous per-tab mutex map (`tabCaptureLocks`) with execution queues and clean teardown auto-retries, handling rapid slider adjustments without service worker collisions.
+
+4. **100% Local-First & Zero-Telemetry:**  
+   Contains zero remote network requests, analytics trackers, or third-party SDKs. All website preferences (`at_domains_v1`) and user configurations (`at_settings_v1`) reside strictly in `chrome.storage.local`.
+
+## Keyboard Shortcuts
+
+- **Configurable Shortcut:** Click **Add shortcut** in the popup footer to configure your preferred key combination in `chrome://extensions/shortcuts` (Default: `Alt+Shift+A`).
+- **Within the Popup:**
+  - `←` / `→` or `↓` / `↑`: Fine volume adjustment (±5%).
+  - `Shift + ←` / `Shift + →`: Coarse volume adjustment (±25%).
+  - `M`: Toggle mute / restore previous volume.
+  - `R`: Reset volume to 100% and normal preset.
+  - `1`, `2`, `3`, `4`: Instant tone preset selection (Normal, Voice, Bass, Night).
 
 ## Tech Stack
 
-| Categoría | Tecnología | Versión | Rol |
+| Category | Technology | Version | Purpose |
 |---|---|---|---|
-| Framework de extensión | WXT | 0.21.5 | Build, manifest MV3, HMR en dev |
-| Lenguaje | TypeScript | 5.9.3 | Tipado estático en todo el proyecto |
-| Bundler | Vite | 8.3.8 | Compilación y tree-shaking |
-| Plataforma | Chrome Extension Manifest V3 | - | TabCapture, Offscreen Document |
-| Motor de audio | Web Audio API | - | GainNode, BiquadFilterNode, DynamicsCompressorNode |
-| Almacenamiento | chrome.storage.local | - | Persistencia 100% local, sin backend |
-| Testing | Vitest + jsdom | 5.1.1 / 31.0.1 | 4 suites de pruebas unitarias |
-| Iconos | @wxt-dev/auto-icons | 2.0.0 | Generación de iconos desde SVG fuente |
-| UI | TypeScript + DOM nativo | - | Sin frameworks para cero peso en runtime |
+| Extension Framework | WXT | 0.21.5 | Build system, MV3 manifest generation, development HMR |
+| Language | TypeScript | 5.9.3 | Strict static typing across all modules |
+| Bundler | Vite | 8.3.8 | Fast bundling and tree-shaking |
+| Platform | Chrome Extension Manifest V3 | - | TabCapture, Offscreen Document |
+| Audio Engine | Web Audio API | - | GainNode, BiquadFilterNode, DynamicsCompressorNode |
+| Storage | chrome.storage.local | - | 100% local persistence, zero backend |
+| Testing | Vitest + jsdom | 5.1.1 / 31.0.1 | Unit test suites for pure logic modules |
+| Asset Icons | @wxt-dev/auto-icons | 2.0.0 | Multi-resolution icon generation from source SVG |
+| User Interface | Native DOM + TypeScript | - | Zero component framework overhead |
 
-## Instalación en modo desarrollador
+## Developer Installation
 
-1. Instala las dependencias y compila desde la raíz del monorepo:
+1. Install monorepo dependencies and compile the extension:
    ```bash
    pnpm install
    pnpm --filter amplifier run build
    ```
-2. Ve a `chrome://extensions/` en Google Chrome y activa el **Modo de desarrollador**.
-3. Haz clic en **Cargar descomprimida**.
-4. Selecciona el directorio `extensions/amplifier/.output/chrome-mv3`.
+2. Navigate to `chrome://extensions/` in Google Chrome and enable **Developer mode** in the top-right corner.
+3. Click **Load unpacked** (*Cargar descomprimida*).
+4. Select the build output directory: `extensions/amplifier/.output/chrome-mv3`.
 
-## Comandos de desarrollo
+## Development Commands
 
 ```bash
-# Ejecutar tests unitarios
+# Run unit test suites
 pnpm --filter amplifier test
 
-# Verificación de tipos TypeScript
+# TypeScript type verification
 pnpm --filter amplifier run compile
 
-# Compilación de producción
+# Production build
 pnpm --filter amplifier run build
 
-# Generación del archivo zip para publicación
+# Package release .zip for Chrome Web Store
 pnpm --filter amplifier run zip
 ```
 
-## Privacidad
+## Privacy & Security
 
-Amplifier Tab funciona de manera 100% local en tu navegador. No realiza ninguna llamada a servidores externos, no recopila datos de telemetría y solo procesa el flujo de audio de las pestañas que decides amplificar directamente en tu máquina.
+Amplifier operates **100% locally in your browser**. It makes zero outbound network requests, gathers no telemetry or analytics, and processes audio streams strictly on your local machine.
 
-## Licencia y autor
+Read the complete multilingual policy at:  
+👉 [**PRIVACY_POLICY.md**](PRIVACY_POLICY.md)
 
-Licencia MIT.
+## Support & Issue Reporting
 
-Created by **[Nicolas Valenzuela](https://nival.is-a.dev)**.
+For bug reports, questions, or feature requests:
+- **GitHub Issue Tracker:** [github.com/Beto18v/browser-extensions/issues](https://github.com/Beto18v/browser-extensions/issues)
+- **Direct Developer Email:** [nicolasalbertov18@gmail.com](mailto:nicolasalbertov18@gmail.com)
+
+## License & Author
+
+Distributed under the [MIT License](LICENSE).
+
+Authored by **[Nicolas Valenzuela](https://nival.is-a.dev)** (*Beto18v*).
+- **Portfolio:** [nival.is-a.dev](https://nival.is-a.dev)
+- **GitHub:** [github.com/Beto18v](https://github.com/Beto18v)
+- **LinkedIn:** [linkedin.com/in/beto18v](https://www.linkedin.com/in/beto18v)

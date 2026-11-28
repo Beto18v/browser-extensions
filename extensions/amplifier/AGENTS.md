@@ -1,65 +1,73 @@
-# Amplifier Tab — Agent Guidelines
+# Amplifier — Agent Guidelines
 
-Reglas específicas para el desarrollo y mantenimiento de **Amplifier Tab** (*Amplificador de Pestaña*).
-Antes de hacer cambios, leer también el `AGENTS.md` de la raíz del monorepo.
+Specific engineering rules and architectural standards for developing and maintaining **Amplifier**.  
+Before making any changes, review the global guidelines in `AGENTS.md` at the repository root.
 
-## Identidad
+## Identity & Naming
 
-- **Directorio:** `extensions/amplifier/`
+- **Directory:** `extensions/amplifier/`
 - **pnpm filter name:** `amplifier`
-- **UI name (EN / default):** Amplifier
-- **UI name (ES):** Amplificador
-- **UI name (PT):** Amplificador
-- **UI name (FR):** Amplificateur
-- **UI name (DE):** Verstärker
-- **UI name (JA):** アンプ
-- **Shortcut:** `Alt+Shift+A`
+- **UI Name (EN / Default):** Amplifier
+- **UI Name (ES):** Amplificador
+- **UI Name (PT):** Amplificador
+- **UI Name (FR):** Amplificateur
+- **UI Name (DE):** Verstärker
+- **UI Name (JA):** アンプ
+- **Default Shortcut:** `Alt+Shift+A`
 
-## Arquitectura (Manifest V3)
+## Architecture (Manifest V3)
 
-- **Popup (`entrypoints/popup/`):** TypeScript + DOM nativo (sin frameworks). Render en frame 0.
-- **Background Service Worker (`entrypoints/background.ts`):** Coordina `chrome.tabCapture`, ciclo de vida del Offscreen Document, estado por pestaña y badge numérico (`160%`).
-- **Offscreen Document (`entrypoints/offscreen/`):** Ejecuta `AudioContext` (Web Audio API) por pestaña con `GainNode` (0%–600%), filtros `BiquadFilterNode` por preset y `DynamicsCompressorNode` anti-distorsión.
-- **Módulos puros (`src/lib/`):** `storage.ts`, `domain.ts`, `presets.ts`, `i18n.ts`. 100% testeables en Vitest sin depender de Web Audio real.
+- **Popup UI (`entrypoints/popup/`):** Pure TypeScript + native DOM (zero component frameworks). Guaranteed Frame 0 render. Event listeners are bound immediately in `init()` to ensure theme and locale controls remain interactive even on restricted browser URLs (`chrome://`).
+- **Background Service Worker (`entrypoints/background.ts`):** Coordinates `chrome.tabCapture`, manages the Offscreen Document lifecycle with per-tab mutex locks (`tabCaptureLocks`), tracks tab playback states, and updates numeric tab badges (`160%`).
+- **Offscreen Document (`entrypoints/offscreen/`):** Executes low-latency Web Audio API graph (`latencyHint: 'interactive'`):  
+  `tabCapture stream` → `MediaStreamAudioSourceNode` → `BiquadFilterNode` (presets) → `DynamicsCompressorNode` (anti-distortion limiter) → `GainNode` (0%–600%) → `audioCtx.destination`.
+- **Pure Library Modules (`src/lib/`):** `storage.ts`, `domain.ts`, `presets.ts`, `i18n.ts`. 100% testable in Vitest without requiring actual Web Audio hardware.
 
-## Storage keys
+## Storage Keys
 
 ```ts
 STORAGE_DOMAINS_KEY = 'at_domains_v1'
 STORAGE_SETTINGS_KEY = 'at_settings_v1'
 ```
 
-No cambiar estas claves sin migración explícita.
+Never alter these keys without an explicit schema migration strategy.
 
-## Sistema de Idiomas (6 locales)
+## Canonical 6-Locale System
 
-- Idiomas soportados: `en` (default), `es`, `pt_BR`, `fr`, `de`, `ja`.
-- El diccionario vive en `src/lib/i18n.ts` (propio de esta extensión para no alterar `packages/shared` ni afectar `prompt-drawer`).
-- Los metadatos de la tienda viven en `public/_locales/{en,es,pt_BR,fr,de,ja}/messages.json`.
-- Todas las claves deben existir simétricamente en los 6 idiomas. Fallback seguro a `en`.
+- Symmetrically supported locales: `en` (default), `es`, `pt_BR`, `fr`, `de`, `ja`.
+- Internal dictionary lives in `src/lib/i18n.ts`.
+- Store metadata lives in `public/_locales/{en,es,pt_BR,fr,de,ja}/messages.json`.
+- All dictionary keys must exist symmetrically across all 6 locales with safe fallback to `en`.
 
-## Reglas de UI y Paleta (Acoustic Slate)
+## UI & Design Rules (Acoustic Slate)
 
-- Tema claro y oscuro con detección inicial del sistema + selector manual persistido.
-- **Paleta Acoustic Slate:** Pizarra frío (`#F3F5F7` / `#12151A`) y acento terracota mate (`#E05A47`).
-- Selector de idioma con menú desplegable e iconos SVG vectoriales de banderas (sin emojis ni dependencias de red).
-- Autofocus en el slider de volumen (`#volume-slider`) al abrir el popup.
-- Porcentaje con `font-variant-numeric: tabular-nums` para evitar saltos visuales.
-- Navegación por teclado: `←` / `→` ajustan volumen en pasos de 5%, `Shift+←` / `Shift+→` en pasos de 25%, `M` silencia/restaura, `R` resetea a 100%, `1–4` cambian preset.
+- Light and Dark modes with automatic system detection + persisted manual override.
+- **Acoustic Slate Palette:** Cold slate background (`#F3F5F7` / `#12151A`) with matte terracotta accent (`#E05A47`).
+- Language selector dropdown with standalone vector SVG flags (no emojis, no external CDN dependencies).
+- Autofocus on `#volume-slider` upon opening popup.
+- Volume percentage formatted with `font-variant-numeric: tabular-nums` to eliminate layout jitter.
+- Comprehensive keyboard navigation: `←` / `→` for 5% steps, `Shift+←` / `Shift+→` for 25% jumps, `M` to mute/unmute, `R` to reset to 100%, `1–4` to select tone presets.
 
-## Marca Personal
+## Privacy & Chrome Web Store Publication
 
-- `"author": "Nicolas Valenzuela (Beto18v)"` en `package.json`.
-- Footer con enlace a configuración de atajos de Chrome ("Agregar atajo" / `chrome://extensions/shortcuts`) + texto "Created by Nicolas Valenzuela" con enlace directo a `https://nival.is-a.dev`.
+- Multilingual privacy policy in `PRIVACY_POLICY.md` covering all 6 supported locales.
+- Canvas promotional asset generator in `assets/webstore-promo.html` exporting official 1280 × 800 px screenshots.
+- Developer contact email: `nicolasalbertov18@gmail.com`.
+- Bug tracker: `https://github.com/Beto18v/browser-extensions/issues`.
 
-## Regla de Oro — Git y Verificación
+## Personal Branding
 
-- Prohibido ejecutar `git commit` o `git push` sin autorización explícita del usuario.
-- Ciclo obligatorio al terminar cualquier cambio:
+- `"author": "Nicolas Valenzuela (Beto18v)"` in `package.json`.
+- Popup footer includes direct link to `chrome://extensions/shortcuts` ("Add shortcut") and "Created by Nicolas Valenzuela" linking to [nival.is-a.dev](https://nival.is-a.dev).
+
+## Golden Rule — Git & Verification
+
+- Prohibited from executing `git commit` or `git push` without explicit user authorization in chat.
+- Mandatory verification cycle after every modification:
 
 ```bash
-pnpm --filter amplifier-tab test
-pnpm --filter amplifier-tab run compile
-pnpm --filter amplifier-tab run build
-pnpm --filter amplifier-tab run zip
+pnpm --filter amplifier test
+pnpm --filter amplifier run compile
+pnpm --filter amplifier run build
+pnpm --filter amplifier run zip
 ```
