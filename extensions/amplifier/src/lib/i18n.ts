@@ -4,7 +4,7 @@ export const SUPPORTED_LOCALES: Locale[] = ['en', 'es', 'pt_BR', 'fr', 'de', 'ja
 
 export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
   en: {
-    appTitle: 'Amplifier Tab',
+    appTitle: 'Amplifier',
     currentSite: 'Current Site',
     noDomain: 'No site detected',
     volume: 'Volume',
@@ -42,7 +42,7 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     languageSelect: 'Language',
   },
   es: {
-    appTitle: 'Amplificador de Pestaña',
+    appTitle: 'Amplificador',
     currentSite: 'Sitio actual',
     noDomain: 'Sin sitio detectado',
     volume: 'Volumen',
@@ -80,7 +80,7 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     languageSelect: 'Idioma',
   },
   pt_BR: {
-    appTitle: 'Amplificador de Aba',
+    appTitle: 'Amplificador',
     currentSite: 'Site atual',
     noDomain: 'Nenhum site detectado',
     volume: 'Volume',
@@ -118,7 +118,7 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     languageSelect: 'Idioma',
   },
   fr: {
-    appTitle: "Amplificateur d'Onglet",
+    appTitle: 'Amplificateur',
     currentSite: 'Site actuel',
     noDomain: 'Aucun site détecté',
     volume: 'Volume',
@@ -156,7 +156,7 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     languageSelect: 'Langue',
   },
   de: {
-    appTitle: 'Tab-Verstärker',
+    appTitle: 'Verstärker',
     currentSite: 'Aktuelle Website',
     noDomain: 'Keine Website erkannt',
     volume: 'Lautstärke',
@@ -194,7 +194,7 @@ export const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     languageSelect: 'Sprache',
   },
   ja: {
-    appTitle: 'タブアンプ',
+    appTitle: 'アンプ',
     currentSite: '現在のサイト',
     noDomain: 'サイトが検出されません',
     volume: '音量',

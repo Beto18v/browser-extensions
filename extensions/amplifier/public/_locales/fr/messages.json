@@ -1,6 +1,6 @@
 {
   "atExtName": {
-    "message": "Amplificateur d'Onglet",
+    "message": "Amplificateur — Augmentation du Volume et Audio d'Onglet",
     "description": "Titre de l'extension"
   },
   "atExtShortName": {
@@ -12,7 +12,7 @@
     "description": "Description du magasin"
   },
   "atCommandOpen": {
-    "message": "Ouvrir l'Amplificateur d'Onglet",
+    "message": "Ouvrir l'Amplificateur",
     "description": "Description du raccourci clavier"
   }
 }

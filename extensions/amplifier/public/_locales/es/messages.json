@@ -1,6 +1,6 @@
 {
   "atExtName": {
-    "message": "Amplificador de Pestaña",
+    "message": "Amplificador — Aumento de Volumen y Audio de Pestaña",
     "description": "Título de la extensión"
   },
   "atExtShortName": {
@@ -12,7 +12,7 @@
     "description": "Descripción de la tienda"
   },
   "atCommandOpen": {
-    "message": "Abrir Amplificador de Pestaña",
+    "message": "Abrir Amplificador",
     "description": "Descripción del atajo de teclado"
   }
 }

@@ -27,9 +27,9 @@ describe('i18n module', () => {
   });
 
   it('t retorna la traducción adecuada con fallback seguro a inglés', () => {
-    expect(t('en', 'appTitle')).toBe('Amplifier Tab');
-    expect(t('es', 'appTitle')).toBe('Amplificador de Pestaña');
-    expect(t('ja', 'appTitle')).toBe('タブアンプ');
+    expect(t('en', 'appTitle')).toBe('Amplifier');
+    expect(t('es', 'appTitle')).toBe('Amplificador');
+    expect(t('ja', 'appTitle')).toBe('アンプ');
     expect(t('fr', 'nonExistentKey')).toBe('nonExistentKey');
   });
 

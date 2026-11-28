@@ -112,14 +112,12 @@ body {
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 3px 6px;
-  font-size: 11px;
-  font-weight: 600;
+  padding: 3px 5px;
   cursor: pointer;
   outline: none;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   height: 26px;
   transition: border-color 0.15s;
 }
@@ -138,6 +136,7 @@ body {
   border-radius: 2px;
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
+  display: block;
 }
 
 .dropdown-arrow {
@@ -160,11 +159,10 @@ body {
   list-style: none;
   padding: 4px;
   margin: 0;
-  width: 130px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
   z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .locale-menu.hidden {
@@ -174,12 +172,10 @@ body {
 .locale-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  justify-content: center;
+  padding: 5px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 11px;
-  color: var(--text);
   transition: background-color 0.1s;
 }
 
@@ -189,22 +185,7 @@ body {
 
 .locale-item.selected {
   background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.locale-name {
-  flex: 1;
-}
-
-.locale-tag {
-  font-size: 9px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.locale-item.selected .locale-tag {
-  color: var(--accent);
+  outline: 1.5px solid var(--accent);
 }
 
 .select-locale {

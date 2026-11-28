@@ -13,7 +13,7 @@ Suite de extensiones de productividad para investigadores, desarrolladores y usu
 | Extensión | Directorio | Descripción | Shortcut | Estado |
 |---|---|---|---|---|
 | Prompt Drawer | `extensions/prompt-drawer/` | Biblioteca local de prompts para IA | `Alt+Shift+V` | v1.0 publicada |
-| Amplifier Tab | `extensions/amplifier-tab/` | Amplificador y ecualizador de audio por pestaña (hasta 600%) | `Alt+Shift+A` | v1.0 lista |
+| Amplifier | `extensions/amplifier/` | Amplificador y ecualizador de audio por pestaña (hasta 600%) | `Alt+Shift+A` | v1.0 lista |
 
 ## Comandos del monorepo
 

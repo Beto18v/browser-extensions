@@ -1,6 +1,6 @@
 {
   "atExtName": {
-    "message": "Amplificador de Aba",
+    "message": "Amplificador — Aumento de Volume e Áudio da Aba",
     "description": "Título da extensão"
   },
   "atExtShortName": {
@@ -12,7 +12,7 @@
     "description": "Descrição da loja"
   },
   "atCommandOpen": {
-    "message": "Abrir Amplificador de Aba",
+    "message": "Abrir Amplificador",
     "description": "Descrição do atalho de teclado"
   }
 }

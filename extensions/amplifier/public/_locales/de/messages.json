@@ -1,6 +1,6 @@
 {
   "atExtName": {
-    "message": "Tab-Verstärker",
+    "message": "Verstärker — Tab-Lautstärke & Audio-Booster",
     "description": "Erweiterungstitel"
   },
   "atExtShortName": {
@@ -12,7 +12,7 @@
     "description": "Store-Beschreibung"
   },
   "atCommandOpen": {
-    "message": "Tab-Verstärker öffnen",
+    "message": "Verstärker öffnen",
     "description": "Beschreibung des Tastenkürzels"
   }
 }

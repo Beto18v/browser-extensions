@@ -5,11 +5,14 @@ Antes de hacer cambios, leer también el `AGENTS.md` de la raíz del monorepo.
 
 ## Identidad
 
-- **Directorio:** `extensions/amplifier-tab/`
-- **pnpm filter name:** `amplifier-tab`
-- **UI name (EN / default):** Amplifier Tab
-- **UI name (ES):** Amplificador de Pestaña
-- **UI name (JA):** タブアンプ
+- **Directorio:** `extensions/amplifier/`
+- **pnpm filter name:** `amplifier`
+- **UI name (EN / default):** Amplifier
+- **UI name (ES):** Amplificador
+- **UI name (PT):** Amplificador
+- **UI name (FR):** Amplificateur
+- **UI name (DE):** Verstärker
+- **UI name (JA):** アンプ
 - **Shortcut:** `Alt+Shift+A`
 
 ## Arquitectura (Manifest V3)

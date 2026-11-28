@@ -1,10 +1,10 @@
 {
   "atExtName": {
-    "message": "Amplifier Tab",
+    "message": "Amplifier — Tab Volume & Audio Booster",
     "description": "Extension title"
   },
   "atExtShortName": {
-    "message": "Amplifier Tab",
+    "message": "Amplifier",
     "description": "Short extension title"
   },
   "atExtDescription": {
@@ -12,7 +12,7 @@
     "description": "Store description"
   },
   "atCommandOpen": {
-    "message": "Open Amplifier Tab",
+    "message": "Open Amplifier",
     "description": "Shortcut command description"
   }
 }

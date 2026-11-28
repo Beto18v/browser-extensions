@@ -29,7 +29,6 @@ const elements = {
   localeDropdownWrapper: document.getElementById('locale-dropdown-wrapper') as HTMLElement,
   btnLocaleTrigger: document.getElementById('btn-locale-trigger') as HTMLButtonElement,
   currentLocaleFlag: document.getElementById('current-locale-flag') as HTMLElement,
-  currentLocaleCode: document.getElementById('current-locale-code') as HTMLElement,
   localeMenu: document.getElementById('locale-menu') as HTMLUListElement,
   localeItems: document.querySelectorAll<HTMLLIElement>('.locale-item'),
   btnThemeToggle: document.getElementById('btn-theme-toggle') as HTMLButtonElement,
@@ -115,17 +114,6 @@ function applyTheme(theme: Theme) {
 function applyTranslations(locale: Locale) {
   settings.locale = locale;
   elements.selectLocale.value = locale;
-
-  // Actualizar bandera y código en el botón del dropdown
-  const codeMap: Record<Locale, string> = {
-    en: 'EN',
-    es: 'ES',
-    pt_BR: 'PT',
-    fr: 'FR',
-    de: 'DE',
-    ja: 'JA',
-  };
-  elements.currentLocaleCode.textContent = codeMap[locale] || 'EN';
 
   // Copiar el SVG de la bandera seleccionada hacia el trigger
   const selectedItem = document.querySelector(`.locale-item[data-locale="${locale}"]`);

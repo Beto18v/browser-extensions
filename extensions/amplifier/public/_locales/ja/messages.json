@@ -1,10 +1,10 @@
 {
   "atExtName": {
-    "message": "タブアンプ",
+    "message": "アンプ — タブ音量＆オーディオブースター",
     "description": "拡張機能の名称"
   },
   "atExtShortName": {
-    "message": "タブアンプ",
+    "message": "アンプ",
     "description": "短い名称"
   },
   "atExtDescription": {
@@ -12,7 +12,7 @@
     "description": "ストアの説明"
   },
   "atCommandOpen": {
-    "message": "タブアンプを開く",
+    "message": "アンプを開く",
     "description": "ショートカットの説明"
   }
 }

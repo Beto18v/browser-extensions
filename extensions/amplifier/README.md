@@ -1,4 +1,4 @@
-# Amplifier Tab
+# Amplifier
 
 Amplificador y ecualizador de audio por pestaña que permite elevar el volumen hasta **600%** con limitador dinámico anti-distorsión, presets de tono analógicos en 1 clic y memoria persistente por sitio web.
 
@@ -52,26 +52,26 @@ Amplificador y ecualizador de audio por pestaña que permite elevar el volumen h
 1. Instala las dependencias y compila desde la raíz del monorepo:
    ```bash
    pnpm install
-   pnpm --filter amplifier-tab run build
+   pnpm --filter amplifier run build
    ```
 2. Ve a `chrome://extensions/` en Google Chrome y activa el **Modo de desarrollador**.
 3. Haz clic en **Cargar descomprimida**.
-4. Selecciona el directorio `extensions/amplifier-tab/.output/chrome-mv3`.
+4. Selecciona el directorio `extensions/amplifier/.output/chrome-mv3`.
 
 ## Comandos de desarrollo
 
 ```bash
 # Ejecutar tests unitarios
-pnpm --filter amplifier-tab test
+pnpm --filter amplifier test
 
 # Verificación de tipos TypeScript
-pnpm --filter amplifier-tab run compile
+pnpm --filter amplifier run compile
 
 # Compilación de producción
-pnpm --filter amplifier-tab run build
+pnpm --filter amplifier run build
 
 # Generación del archivo zip para publicación
-pnpm --filter amplifier-tab run zip
+pnpm --filter amplifier run zip
 ```
 
 ## Privacidad
