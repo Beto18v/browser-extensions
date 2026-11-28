@@ -15,7 +15,11 @@
     "build:amplifier": "pnpm --filter amplifier run build",
     "zip:amplifier": "pnpm --filter amplifier run zip",
     "dev:amplifier": "pnpm --filter amplifier run dev",
-    "test:amplifier": "pnpm --filter amplifier run test"
+    "test:amplifier": "pnpm --filter amplifier run test",
+    "build:shade": "pnpm --filter shade run build",
+    "zip:shade": "pnpm --filter shade run zip",
+    "dev:shade": "pnpm --filter shade run dev",
+    "test:shade": "pnpm --filter shade run test"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

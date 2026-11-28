@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Shade — Chrome Web Store Promo Generator (1280x800)</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #0b0b0c;
+        color: #f4f4f5;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      button, select {
+        padding: 8px 14px;
+        background: #18181a;
+        color: #f4f4f5;
+        border: 1px solid #3e3e44;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button.primary {
+        background: #e11d48;
+        border-color: #e11d48;
+        font-weight: 600;
+      }
+      canvas {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #2b2b2f;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <select id="slide-select">
+        <option value="1">Slide 1 — Per-Site Precision Dark Mode</option>
+        <option value="2">Slide 2 — Google Docs & Sheets Hybrid Canvas</option>
+        <option value="3">Slide 3 — Tactile Hardware Calibration</option>
+      </select>
+      <button id="btn-download" class="primary">Download 1280 × 800 PNG</button>
+    </div>
+    <canvas id="promo-canvas" width="1280" height="800"></canvas>
+
+    <script>
+      const canvas = document.getElementById('promo-canvas');
+      const ctx = canvas.getContext('2d');
+      const slideSelect = document.getElementById('slide-select');
+      const btnDownload = document.getElementById('btn-download');
+
+      const SLIDES = {
+        '1': {
+          eyebrow: 'OPT-IN PER-DOMAIN ENGINE',
+          title: 'Shade',
+          subtitle: 'Precision per-site dark mode & light calibration.\nZero white flash. Zero broken layouts.',
+          badge: 'CARBON PRESET · 92% BRIGHTNESS · 96% CONTRAST',
+        },
+        '2': {
+          eyebrow: 'GOOGLE WORKSPACE HYBRID ADAPTER',
+          title: 'Docs, Sheets & Slides',
+          subtitle: 'Decouple dark toolbars from your document canvas.\nToggle true white paper or dark canvas in one click.',
+          badge: 'HYBRID CANVAS ENGINE · ZERO MEDIA INVERSION',
+        },
+        '3': {
+          eyebrow: 'LEICA CRIMSON TACTILE HARDWARE',
+          title: 'Calibrate Every Site',
+          subtitle: '4 optical presets, millimeter sliders, 6 languages,\nand 100% local-first privacy.',
+          badge: 'ALT+SHIFT+S · MANIFEST V3 · 100% LOCAL',
+        },
+      };
+
+      function drawSlide(id) {
+        const data = SLIDES[id] || SLIDES['1'];
+
+        // Matte background
+        ctx.fillStyle = '#111111';
+        ctx.fillRect(0, 0, 1280, 800);
+
+        // Subtle technical grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < 1280; x += 40) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, 800);
+          ctx.stroke();
+        }
+        for (let y = 0; y < 800; y += 40) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(1280, y);
+          ctx.stroke();
+        }
+
+        // Left copy column
+        ctx.fillStyle = '#E11D48';
+        ctx.font = '700 16px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText(data.eyebrow, 88, 250);
+
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '700 68px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText(data.title, 88, 330);
+
+        ctx.fillStyle = '#8E8E96';
+        ctx.font = '400 26px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        const lines = data.subtitle.split('\n');
+        lines.forEach((line, idx) => {
+          ctx.fillText(line, 88, 395 + idx * 38);
+        });
+
+        // Pill badge
+        ctx.fillStyle = 'rgba(225, 29, 72, 0.14)';
+        ctx.strokeStyle = '#E11D48';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(88, 510, 520, 44, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '600 14px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText(data.badge, 108, 537);
+
+        // Right hardware card mockup
+        ctx.fillStyle = '#18181A';
+        ctx.strokeStyle = '#3E3E44';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(780, 120, 400, 560, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        // Card header
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '700 18px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText('SHADE', 816, 168);
+
+        // Crimson LED
+        ctx.fillStyle = '#E11D48';
+        ctx.beginPath();
+        ctx.arc(1136, 162, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Divider
+        ctx.strokeStyle = '#2B2B2F';
+        ctx.beginPath();
+        ctx.moveTo(780, 192);
+        ctx.lineTo(1180, 192);
+        ctx.stroke();
+
+        // Preset tiles
+        const presets = ['CARBON', 'WARM PAPER', 'NIGHT SHIFT', 'CRISP DARK'];
+        presets.forEach((name, i) => {
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const px = 816 + col * 168;
+          const py = 228 + row * 92;
+          const active = i === 0;
+          ctx.fillStyle = active ? 'rgba(225, 29, 72, 0.14)' : '#202023';
+          ctx.strokeStyle = active ? '#E11D48' : '#2B2B2F';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.roundRect(px, py, 156, 76, 6);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#F4F4F5';
+          ctx.font = '700 13px ui-monospace, Menlo, Consolas, monospace';
+          ctx.fillText(name, px + 14, py + 34);
+        });
+
+        // Slider bars
+        const sliders = [
+          { label: 'BRIGHTNESS', val: '92%', pct: 0.42 },
+          { label: 'CONTRAST', val: '96%', pct: 0.46 },
+          { label: 'WARMTH', val: '28%', pct: 0.28 },
+        ];
+        sliders.forEach((s, i) => {
+          const sy = 450 + i * 68;
+          ctx.fillStyle = '#8E8E96';
+          ctx.font = '600 12px ui-monospace, Menlo, Consolas, monospace';
+          ctx.fillText(s.label, 816, sy);
+          ctx.fillStyle = '#F4F4F5';
+          ctx.fillText(s.val, 1110, sy);
+
+          ctx.fillStyle = '#2B2B2F';
+          ctx.fillRect(816, sy + 14, 328, 6);
+          ctx.fillStyle = '#E11D48';
+          ctx.fillRect(816 + 328 * s.pct - 6, sy + 8, 12, 18);
+        });
+      }
+
+      slideSelect.addEventListener('change', () => drawSlide(slideSelect.value));
+      btnDownload.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = `shade-webstore-slide-${slideSelect.value}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+
+      drawSlide('1');
+    </script>
+  </body>
+</html>

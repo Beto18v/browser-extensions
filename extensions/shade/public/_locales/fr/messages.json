@@ -1,0 +1,14 @@
+{
+  "stExtName": {
+    "message": "Shade - Mode Sombre et Contrôle de Lumière"
+  },
+  "stExtShortName": {
+    "message": "Shade"
+  },
+  "stExtDescription": {
+    "message": "Mode sombre et contrôle de luminosité par site avec prise en charge réelle de Google Docs, Sheets et Slides."
+  },
+  "stCommandOpen": {
+    "message": "Ouvrir les contrôles de lumière et mode sombre Shade"
+  }
+}

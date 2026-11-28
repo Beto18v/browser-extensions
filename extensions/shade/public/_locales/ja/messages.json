@@ -1,0 +1,14 @@
+{
+  "stExtName": {
+    "message": "Shade - ダークモード＆明るさ調整"
+  },
+  "stExtShortName": {
+    "message": "Shade"
+  },
+  "stExtDescription": {
+    "message": "Googleドキュメント・スプレッドシート対応のサイト別ダークモード＆明るさ調整拡張機能。"
+  },
+  "stCommandOpen": {
+    "message": "Shadeのライト・ダークモード設定を開く"
+  }
+}

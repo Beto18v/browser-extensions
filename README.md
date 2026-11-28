@@ -14,6 +14,7 @@ High-performance, local-first browser productivity extensions for developers, re
 |---|---|---|---|---|
 | **Prompt Drawer** | `extensions/prompt-drawer/` | Offline prompt manager and dynamic variable resolver for AI workflows | `Alt+Shift+V` | v1.0 Published |
 | **Amplifier** | `extensions/amplifier/` | Tab audio booster (up to 600%), studio tone equalizer, and anti-clipping limiter | `Alt+Shift+A` | v1.0 Release Candidate |
+| **Shade** | `extensions/shade/` | Per-site dark mode and light control with real canvas darkening for Google Docs, Sheets & Slides | `Alt+Shift+S` | v1.0 Release Candidate |
 
 ## Core Architecture Principles
 

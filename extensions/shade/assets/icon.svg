@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Outer precision ring -->
+  <circle cx="64" cy="64" r="56" fill="#111111" stroke="#3E3E44" stroke-width="4" />
+  <!-- Left illuminated half-moon -->
+  <path d="M64 16 A48 48 0 0 0 64 112 Z" fill="#F4F3F0" />
+  <!-- Inner optical aperture ring -->
+  <circle cx="64" cy="64" r="30" fill="none" stroke="#2B2B2F" stroke-width="2.5" stroke-dasharray="5 4" />
+  <!-- Crimson Leica accent dot -->
+  <circle cx="88" cy="40" r="10" fill="#E11D48" />
+  <circle cx="88" cy="40" r="4" fill="#FFFFFF" opacity="0.85" />
+</svg>
