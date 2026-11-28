@@ -1,12 +1,12 @@
 {
   "stExtName": {
-    "message": "Shade - Dunkelmodus & Lichtsteuerung"
+    "message": "Shade - Dunkelmodus für Docs, Sheets & Web"
   },
   "stExtShortName": {
     "message": "Shade"
   },
   "stExtDescription": {
-    "message": "Dunkelmodus und Lichtsteuerung pro Website mit echter Canvas-Abdunkelung für Google Docs, Sheets & Slides."
+    "message": "Echter Dunkelmodus für Google Docs, Sheets & Slides mit separater Canvas-Steuerung und Lichtkalibrierung pro Website."
   },
   "stCommandOpen": {
     "message": "Shade Licht- und Dunkelmodus-Steuerung öffnen"

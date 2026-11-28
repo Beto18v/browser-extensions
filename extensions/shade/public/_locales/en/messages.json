@@ -1,12 +1,12 @@
 {
   "stExtName": {
-    "message": "Shade - Dark Mode & Light Control"
+    "message": "Shade - Dark Mode for Docs, Sheets & Web"
   },
   "stExtShortName": {
     "message": "Shade"
   },
   "stExtDescription": {
-    "message": "Per-site dark mode and light control with real canvas darkening for Google Docs, Sheets & Slides."
+    "message": "Real dark mode for Google Docs, Sheets & Slides with independent canvas toggle, plus per-site light calibration for any website."
   },
   "stCommandOpen": {
     "message": "Open Shade light & dark mode controls"

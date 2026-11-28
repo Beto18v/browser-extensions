@@ -1,12 +1,12 @@
 {
   "stExtName": {
-    "message": "Shade - Mode Sombre et Contrôle de Lumière"
+    "message": "Shade - Mode Sombre pour Docs, Sheets & Web"
   },
   "stExtShortName": {
     "message": "Shade"
   },
   "stExtDescription": {
-    "message": "Mode sombre et contrôle de luminosité par site avec prise en charge réelle de Google Docs, Sheets et Slides."
+    "message": "Mode sombre réel pour Google Docs, Sheets et Slides avec contrôle du canevas indépendant et calibration par site web."
   },
   "stCommandOpen": {
     "message": "Ouvrir les contrôles de lumière et mode sombre Shade"

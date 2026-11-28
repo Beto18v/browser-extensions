@@ -1,14 +1,14 @@
 {
   "stExtName": {
-    "message": "Sombra - Modo Escuro e Controle de Luz"
+    "message": "Sombra - Modo Escuro para Docs, Sheets e Web"
   },
   "stExtShortName": {
     "message": "Sombra"
   },
   "stExtDescription": {
-    "message": "Modo escuro e controle de luz por site com suporte real de tela para Google Docs, Sheets e Slides."
+    "message": "Modo escuro real para Google Docs, Sheets e Slides com controle de tela independente e calibração de luz por site."
   },
   "stCommandOpen": {
-    "message": "Abrir controles de modo escuro e luz do Shade"
+    "message": "Abrir controles de modo escuro e luz do Sombra"
   }
 }

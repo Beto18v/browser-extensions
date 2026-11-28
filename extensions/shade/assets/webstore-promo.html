@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Shade — Chrome Web Store Promo Generator (1280x800)</title>
     <style>
+      * { box-sizing: border-box; }
       body {
         margin: 0;
         padding: 24px;
@@ -17,22 +18,29 @@
       }
       .toolbar {
         display: flex;
-        gap: 12px;
+        gap: 10px;
         align-items: center;
+        flex-wrap: wrap;
       }
-      button, select {
-        padding: 8px 14px;
+      button {
+        padding: 9px 14px;
         background: #18181a;
         color: #f4f4f5;
         border: 1px solid #3e3e44;
         border-radius: 6px;
         cursor: pointer;
         font-size: 13px;
+        font-weight: 500;
+      }
+      button.active {
+        border-color: #e11d48;
+        background: rgba(225, 29, 72, 0.16);
       }
       button.primary {
         background: #e11d48;
         border-color: #e11d48;
         font-weight: 600;
+        margin-left: 12px;
       }
       canvas {
         max-width: 100%;
@@ -44,50 +52,66 @@
   </head>
   <body>
     <div class="toolbar">
-      <select id="slide-select">
-        <option value="1">Slide 1 — Per-Site Precision Dark Mode</option>
-        <option value="2">Slide 2 — Google Docs & Sheets Hybrid Canvas</option>
-        <option value="3">Slide 3 — Tactile Hardware Calibration</option>
-      </select>
-      <button id="btn-download" class="primary">Download 1280 × 800 PNG</button>
+      <button class="slide-btn active" data-slide="1">1. Google Docs, Sheets &amp; Slides</button>
+      <button class="slide-btn" data-slide="2">2. Per-Site Presets &amp; Calibration</button>
+      <button class="slide-btn" data-slide="3">3. Instant &amp; 100% Local</button>
+      <button id="btn-download" class="primary">Download PNG (1280 × 800)</button>
     </div>
     <canvas id="promo-canvas" width="1280" height="800"></canvas>
 
     <script>
       const canvas = document.getElementById('promo-canvas');
       const ctx = canvas.getContext('2d');
-      const slideSelect = document.getElementById('slide-select');
+      const slideButtons = document.querySelectorAll('.slide-btn');
       const btnDownload = document.getElementById('btn-download');
+      let currentSlide = '1';
 
       const SLIDES = {
         '1': {
-          eyebrow: 'OPT-IN PER-DOMAIN ENGINE',
-          title: 'Shade',
-          subtitle: 'Precision per-site dark mode & light calibration.\nZero white flash. Zero broken layouts.',
-          badge: 'CARBON PRESET · 92% BRIGHTNESS · 96% CONTRAST',
+          eyebrow: 'GOOGLE WORKSPACE HYBRID ENGINE',
+          title: 'Docs, Sheets\n& Slides',
+          subtitle: 'Real dark mode for Google Workspace.\nDecouple dark toolbars from your document canvas.',
+          bullets: [
+            'Switch Dark Canvas vs True Paper in one click',
+            'Dedicated adapters for Docs, Sheets & Slides',
+            'Zero broken tables, charts, or inverted photos',
+          ],
+          badge: 'DOCS · SHEETS · SLIDES · HYBRID CANVAS',
+          domain: 'docs.google.com',
+          adapter: 'GOOGLE DOCS',
         },
         '2': {
-          eyebrow: 'GOOGLE WORKSPACE HYBRID ADAPTER',
-          title: 'Docs, Sheets & Slides',
-          subtitle: 'Decouple dark toolbars from your document canvas.\nToggle true white paper or dark canvas in one click.',
-          badge: 'HYBRID CANVAS ENGINE · ZERO MEDIA INVERSION',
+          eyebrow: 'OPT-IN PER-DOMAIN ENGINE',
+          title: 'Calibrate\nEvery Site',
+          subtitle: 'Leave the web untouched until you turn Shade on.\nFine-tune brightness, contrast, and warmth in real time.',
+          bullets: [
+            '4 optical presets: Carbon, Warm Paper, Night Shift, Crisp Dark',
+            'Precision sliders with zero lag and zero white flash',
+            'Preserves natural colors in images, video, and iframes',
+          ],
+          badge: 'CARBON · WARM PAPER · NIGHT SHIFT · CRISP DARK',
+          domain: 'wikipedia.org',
+          adapter: 'STANDARD WEB',
         },
         '3': {
           eyebrow: 'LEICA CRIMSON TACTILE HARDWARE',
-          title: 'Calibrate Every Site',
-          subtitle: '4 optical presets, millimeter sliders, 6 languages,\nand 100% local-first privacy.',
-          badge: 'ALT+SHIFT+S · MANIFEST V3 · 100% LOCAL',
+          title: 'Instant &\n100% Local',
+          subtitle: 'Activates on open tabs without reloading.\nZero servers, zero telemetry, 6 built-in languages.',
+          bullets: [
+            'Instant injection on existing tabs without page refresh',
+            'Per-domain memory stored locally in your browser',
+            'Keyboard-first workflow with Alt+Shift+S shortcut',
+          ],
+          badge: 'ALT+SHIFT+S · MANIFEST V3 · 6 LOCALES · ZERO TELEMETRY',
+          domain: 'github.com',
+          adapter: 'STANDARD WEB',
         },
       };
 
-      function drawSlide(id) {
-        const data = SLIDES[id] || SLIDES['1'];
-
-        // Matte background
+      function drawBackground() {
         ctx.fillStyle = '#111111';
         ctx.fillRect(0, 0, 1280, 800);
 
-        // Subtle technical grid
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
         ctx.lineWidth = 1;
         for (let x = 0; x < 1280; x += 40) {
@@ -102,109 +126,391 @@
           ctx.lineTo(1280, y);
           ctx.stroke();
         }
+      }
 
-        // Left copy column
+      function drawLeftCopy(data, maxX) {
         ctx.fillStyle = '#E11D48';
-        ctx.font = '700 16px ui-monospace, Menlo, Consolas, monospace';
-        ctx.fillText(data.eyebrow, 88, 250);
+        ctx.font = '700 14px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText(data.eyebrow, 72, 165);
 
         ctx.fillStyle = '#F4F4F5';
-        ctx.font = '700 68px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
-        ctx.fillText(data.title, 88, 330);
-
-        ctx.fillStyle = '#8E8E96';
-        ctx.font = '400 26px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
-        const lines = data.subtitle.split('\n');
-        lines.forEach((line, idx) => {
-          ctx.fillText(line, 88, 395 + idx * 38);
+        ctx.font = '700 54px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        const titleLines = data.title.split('\n');
+        titleLines.forEach((line, idx) => {
+          ctx.fillText(line, 72, 230 + idx * 62);
         });
 
-        // Pill badge
+        const subBaseY = 230 + titleLines.length * 62 + 12;
+        ctx.fillStyle = '#A1A1AA';
+        ctx.font = '400 20px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        data.subtitle.split('\n').forEach((line, idx) => {
+          ctx.fillText(line, 72, subBaseY + idx * 30);
+        });
+
+        const bulletsBaseY = subBaseY + 95;
+        data.bullets.forEach((item, idx) => {
+          const by = bulletsBaseY + idx * 42;
+          ctx.fillStyle = '#E11D48';
+          ctx.beginPath();
+          ctx.arc(80, by - 6, 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#E4E4E7';
+          ctx.font = '500 17px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+          ctx.fillText(item, 98, by);
+        });
+
+        const badgeWidth = Math.min(maxX - 72, 490);
         ctx.fillStyle = 'rgba(225, 29, 72, 0.14)';
         ctx.strokeStyle = '#E11D48';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.roundRect(88, 510, 520, 44, 6);
+        ctx.roundRect(72, 608, badgeWidth, 42, 6);
         ctx.fill();
         ctx.stroke();
 
         ctx.fillStyle = '#F4F4F5';
-        ctx.font = '600 14px ui-monospace, Menlo, Consolas, monospace';
-        ctx.fillText(data.badge, 108, 537);
+        ctx.font = '600 12px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText(data.badge, 90, 634);
+      }
 
-        // Right hardware card mockup
+      function drawDocsSplitPreview() {
+        const winX = 590;
+        const winY = 92;
+        const winW = 626;
+        const winH = 616;
+
+        // Browser / Google Docs outer frame
         ctx.fillStyle = '#18181A';
         ctx.strokeStyle = '#3E3E44';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.roundRect(780, 120, 400, 560, 12);
+        ctx.roundRect(winX, winY, winW, winH, 12);
         ctx.fill();
         ctx.stroke();
 
-        // Card header
-        ctx.fillStyle = '#F4F4F5';
-        ctx.font = '700 18px ui-monospace, Menlo, Consolas, monospace';
-        ctx.fillText('SHADE', 816, 168);
-
-        // Crimson LED
-        ctx.fillStyle = '#E11D48';
+        // Top Docs header bar
+        ctx.fillStyle = '#141416';
         ctx.beginPath();
-        ctx.arc(1136, 162, 6, 0, Math.PI * 2);
+        ctx.roundRect(winX + 2, winY + 2, winW - 4, 54, [10, 10, 0, 0]);
         ctx.fill();
 
-        // Divider
+        // Blue Docs page icon
+        ctx.fillStyle = '#4285F4';
+        ctx.beginPath();
+        ctx.roundRect(winX + 20, winY + 15, 22, 28, 3);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(winX + 25, winY + 23, 12, 2);
+        ctx.fillRect(winX + 25, winY + 28, 12, 2);
+        ctx.fillRect(winX + 25, winY + 33, 8, 2);
+
+        // Document title & menu items
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '600 14px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('Quarterly Architecture Spec', winX + 54, winY + 28);
+        ctx.fillStyle = '#8E8E96';
+        ctx.font = '500 11px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('File   Edit   View   Insert   Format   Tools', winX + 54, winY + 46);
+
+        // Dark toolbar pill
+        ctx.fillStyle = '#222226';
+        ctx.beginPath();
+        ctx.roundRect(winX + 16, winY + 66, winW - 32, 32, 16);
+        ctx.fill();
+
+        ctx.fillStyle = '#A1A1AA';
+        ctx.font = '600 11px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText('100%   Normal text   Inter   11   B   I   U   A', winX + 34, winY + 86);
+
+        // Ruler bar
+        ctx.fillStyle = '#1C1C1F';
+        ctx.fillRect(winX + 2, winY + 106, winW - 4, 18);
         ctx.strokeStyle = '#2B2B2F';
         ctx.beginPath();
-        ctx.moveTo(780, 192);
-        ctx.lineTo(1180, 192);
+        for (let rx = winX + 24; rx < winX + winW - 24; rx += 16) {
+          ctx.moveTo(rx, winY + 118);
+          ctx.lineTo(rx, winY + 124);
+        }
         ctx.stroke();
 
-        // Preset tiles
+        // Dark desk area
+        ctx.fillStyle = '#101012';
+        ctx.fillRect(winX + 2, winY + 124, winW - 4, winH - 126);
+
+        // Paper sheet (split vertically: left = Dark Canvas, right = True Paper)
+        const pageX = winX + 52;
+        const pageY = winY + 148;
+        const pageW = 522;
+        const pageH = 446;
+        const splitX = pageX + pageW / 2;
+
+        // Left half (Dark Canvas)
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(pageX, pageY, pageW / 2, pageH);
+        ctx.clip();
+
+        ctx.fillStyle = '#171719';
+        ctx.fillRect(pageX, pageY, pageW, pageH);
+        drawDocContent(pageX, pageY, true);
+        ctx.restore();
+
+        // Right half (True White Paper)
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(splitX, pageY, pageW / 2, pageH);
+        ctx.clip();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(pageX, pageY, pageW, pageH);
+        drawDocContent(pageX, pageY, false);
+        ctx.restore();
+
+        // Sheet border + crimson split line
+        ctx.strokeStyle = '#3E3E44';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(pageX, pageY, pageW, pageH);
+
+        ctx.strokeStyle = '#E11D48';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(splitX, pageY - 8);
+        ctx.lineTo(splitX, pageY + pageH + 8);
+        ctx.stroke();
+
+        // Split labels
+        ctx.fillStyle = 'rgba(225, 29, 72, 0.9)';
+        ctx.beginPath();
+        ctx.roundRect(pageX + 12, pageY + 12, 106, 22, 4);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText('DARK CANVAS', pageX + 22, pageY + 27);
+
+        ctx.fillStyle = '#141416';
+        ctx.beginPath();
+        ctx.roundRect(pageX + pageW - 110, pageY + 12, 98, 22, 4);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText('TRUE PAPER', pageX + pageW - 97, pageY + 27);
+
+        // Floating compact Shade card at bottom-right
+        const popX = winX + 340;
+        const popY = winY + 420;
+        const popW = 266;
+        const popH = 166;
+
+        ctx.fillStyle = '#18181A';
+        ctx.strokeStyle = '#E11D48';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(popX, popY, popW, popH, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '700 13px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText('SHADE', popX + 16, popY + 28);
+
+        ctx.fillStyle = '#E11D48';
+        ctx.beginPath();
+        ctx.arc(popX + popW - 20, popY + 24, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#A1A1AA';
+        ctx.font = '600 11px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText('docs.google.com · GOOGLE DOCS', popX + 16, popY + 52);
+
+        // Darken Canvas Switch Box
+        ctx.fillStyle = 'rgba(225, 29, 72, 0.14)';
+        ctx.strokeStyle = '#E11D48';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(popX + 14, popY + 72, popW - 28, 42, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '600 11px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('Darken canvas (Docs)', popX + 24, popY + 97);
+
+        // Active switch knob
+        ctx.fillStyle = 'rgba(225, 29, 72, 0.3)';
+        ctx.beginPath();
+        ctx.roundRect(popX + popW - 58, popY + 84, 34, 18, 3);
+        ctx.fill();
+        ctx.fillStyle = '#E11D48';
+        ctx.fillRect(popX + popW - 39, popY + 86, 13, 14);
+
+        ctx.fillStyle = '#8E8E96';
+        ctx.font = '500 10px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText('PRESET: CARBON · 92% · 96%', popX + 16, popY + 140);
+      }
+
+      function drawDocContent(pageX, pageY, isDark) {
+        const titleColor = isDark ? '#F4F4F5' : '#111827';
+        const accentColor = isDark ? '#60A5FA' : '#1D4ED8';
+        const bodyColor = isDark ? '#A1A1AA' : '#374151';
+        const tableHeaderBg = isDark ? '#27272A' : '#E5E7EB';
+        const tableBorder = isDark ? '#3F3F46' : '#D1D5DB';
+
+        ctx.fillStyle = titleColor;
+        ctx.font = '700 20px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('1. System Architecture & Optical Specs', pageX + 36, pageY + 78);
+
+        ctx.fillStyle = accentColor;
+        ctx.font = '600 13px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('1.1 Per-Domain Calibration Matrix', pageX + 36, pageY + 112);
+
+        ctx.fillStyle = bodyColor;
+        ctx.font = '400 12px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('Shade isolates the document canvas from the editor chrome so', pageX + 36, pageY + 138);
+        ctx.fillText('toolbars remain dark while preserving readable contrast.', pageX + 36, pageY + 156);
+
+        // Table
+        const tx = pageX + 36;
+        const ty = pageY + 180;
+        const tw = 450;
+        ctx.fillStyle = tableHeaderBg;
+        ctx.fillRect(tx, ty, tw, 30);
+        ctx.strokeStyle = tableBorder;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(tx, ty, tw, 120);
+        ctx.beginPath();
+        ctx.moveTo(tx, ty + 30); ctx.lineTo(tx + tw, ty + 30);
+        ctx.moveTo(tx, ty + 60); ctx.lineTo(tx + tw, ty + 60);
+        ctx.moveTo(tx, ty + 90); ctx.lineTo(tx + tw, ty + 90);
+        ctx.moveTo(tx + 170, ty); ctx.lineTo(tx + 170, ty + 120);
+        ctx.stroke();
+
+        ctx.fillStyle = titleColor;
+        ctx.font = '600 11px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('Module', tx + 12, ty + 19);
+        ctx.fillText('Target Behavior', tx + 184, ty + 19);
+
+        ctx.fillStyle = bodyColor;
+        ctx.font = '400 11px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText('Google Docs', tx + 12, ty + 49);
+        ctx.fillText('Dark UI + toggleable page canvas', tx + 184, ty + 49);
+        ctx.fillText('Google Sheets', tx + 12, ty + 79);
+        ctx.fillText('Preserves cell colors or darkens grid', tx + 184, ty + 79);
+        ctx.fillText('Google Slides', tx + 12, ty + 109);
+        ctx.fillText('Protects SVG slide artwork & viewer', tx + 184, ty + 109);
+
+        ctx.fillStyle = bodyColor;
+        ctx.fillText('All preferences are persisted locally with zero telemetry.', pageX + 36, pageY + 332);
+      }
+
+      function drawPopupMockup(data) {
+        ctx.fillStyle = '#18181A';
+        ctx.strokeStyle = '#3E3E44';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(780, 105, 408, 590, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '700 17px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText('SHADE', 816, 152);
+
+        ctx.fillStyle = '#E11D48';
+        ctx.beginPath();
+        ctx.arc(1144, 146, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#2B2B2F';
+        ctx.beginPath();
+        ctx.moveTo(780, 178);
+        ctx.lineTo(1188, 178);
+        ctx.stroke();
+
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '600 14px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText(data.domain, 816, 212);
+
+        ctx.fillStyle = '#E11D48';
+        ctx.font = '700 11px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText(data.adapter, 816, 232);
+
         const presets = ['CARBON', 'WARM PAPER', 'NIGHT SHIFT', 'CRISP DARK'];
         presets.forEach((name, i) => {
           const col = i % 2;
           const row = Math.floor(i / 2);
-          const px = 816 + col * 168;
-          const py = 228 + row * 92;
+          const px = 816 + col * 172;
+          const py = 262 + row * 82;
           const active = i === 0;
           ctx.fillStyle = active ? 'rgba(225, 29, 72, 0.14)' : '#202023';
           ctx.strokeStyle = active ? '#E11D48' : '#2B2B2F';
           ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.roundRect(px, py, 156, 76, 6);
+          ctx.roundRect(px, py, 160, 68, 6);
           ctx.fill();
           ctx.stroke();
 
           ctx.fillStyle = '#F4F4F5';
-          ctx.font = '700 13px ui-monospace, Menlo, Consolas, monospace';
-          ctx.fillText(name, px + 14, py + 34);
+          ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace';
+          ctx.fillText(name, px + 14, py + 32);
         });
 
-        // Slider bars
         const sliders = [
           { label: 'BRIGHTNESS', val: '92%', pct: 0.42 },
           { label: 'CONTRAST', val: '96%', pct: 0.46 },
-          { label: 'WARMTH', val: '28%', pct: 0.28 },
+          { label: 'WARMTH', val: '0%', pct: 0.04 },
         ];
         sliders.forEach((s, i) => {
-          const sy = 450 + i * 68;
+          const sy = 458 + i * 58;
           ctx.fillStyle = '#8E8E96';
           ctx.font = '600 12px ui-monospace, Menlo, Consolas, monospace';
           ctx.fillText(s.label, 816, sy);
           ctx.fillStyle = '#F4F4F5';
-          ctx.fillText(s.val, 1110, sy);
+          ctx.fillText(s.val, 1118, sy);
 
           ctx.fillStyle = '#2B2B2F';
-          ctx.fillRect(816, sy + 14, 328, 6);
+          ctx.fillRect(816, sy + 12, 336, 5);
           ctx.fillStyle = '#E11D48';
-          ctx.fillRect(816 + 328 * s.pct - 6, sy + 8, 12, 18);
+          ctx.fillRect(816 + 336 * s.pct - 5, sy + 7, 10, 15);
         });
+
+        ctx.fillStyle = 'rgba(225, 29, 72, 0.12)';
+        ctx.strokeStyle = '#E11D48';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(816, 626, 336, 44, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#F4F4F5';
+        ctx.font = '600 12px ui-monospace, Menlo, Consolas, monospace';
+        ctx.fillText('DARKEN CANVAS (DOCS / SHEETS)', 832, 653);
       }
 
-      slideSelect.addEventListener('change', () => drawSlide(slideSelect.value));
+      function drawSlide(id) {
+        currentSlide = id;
+        const data = SLIDES[id] || SLIDES['1'];
+
+        slideButtons.forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.slide === id);
+        });
+
+        drawBackground();
+
+        if (id === '1') {
+          drawLeftCopy(data, 560);
+          drawDocsSplitPreview();
+        } else {
+          drawLeftCopy(data, 720);
+          drawPopupMockup(data);
+        }
+      }
+
+      slideButtons.forEach((btn) => {
+        btn.addEventListener('click', () => drawSlide(btn.dataset.slide));
+      });
       btnDownload.addEventListener('click', () => {
         const link = document.createElement('a');
-        link.download = `shade-webstore-slide-${slideSelect.value}.png`;
+        link.download = `shade-webstore-slide-${currentSlide}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       });

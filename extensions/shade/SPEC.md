@@ -51,7 +51,7 @@ extensions/shade/
 ├── tsconfig.json
 ├── wxt.config.ts
 ├── assets/
-│   ├── icon.svg                  # Minimalist 128x128 SVG (split light/shadow dial with #E11D48 accent)
+│   ├── icon.svg                  # Transparent circular eclipse dial with #E11D48 accent
 │   └── webstore-promo.html       # 1280x800 canvas promotional screenshot generator
 ├── public/
 │   └── _locales/
@@ -114,7 +114,7 @@ If `!profile.enabled`, returns `''` (removes `#shade-engine` from DOM).
 3. **Google Workspace Adapter (`google-docs`, `google-sheets`, `google-slides`):**
    - When `profile.preset` is dark (`carbon`, `night_shift`, `crisp_dark`):
      - If `profile.darkenCanvas === true`: keeps the editor `<canvas>` elements inverted (`.kix-canvas-tile-content`, `.grid-container canvas`, `.punch-viewer-content canvas`, `canvas`), rendering document pages, spreadsheet grids, and slide decks in dark mode while protecting embedded images and avatars (`img`).
-     - If `profile.darkenCanvas === false`: generates targeted re-inversion rules for the editor canvas (`canvas.kix-canvas-tile-content, .grid-container canvas, .punch-viewer-content canvas, #docs-editor canvas { filter: invert(1) hue-rotate(180deg) !important; }`), keeping toolbars and menus dark while preserving true white paper and original spreadsheet cell colors.
+     - If `profile.darkenCanvas === false`: generates per-adapter re-inversion rules (`google-docs`: `canvas.kix-canvas-tile-content` + `#FFFFFF` background; `google-sheets`: `.grid-container canvas`; `google-slides`: `#pages > svg` + `.punch-viewer-content`; `generic`: `canvas`), keeping toolbars and menus dark while preserving true white paper, spreadsheet cell colors, and slide artwork.
    - When on Google Workspace, the switch **"Darken canvas (Docs / Sheets)"** is highlighted as available. On generic sites, it remains available for canvas-heavy web applications (e.g. Figma, Excalidraw, PDF viewers).
 
 ### Real-Time Synchronization
@@ -254,7 +254,7 @@ export default defineConfig({
     short_name: '__MSG_stExtShortName__',
     description: '__MSG_stExtDescription__',
     version: '1.0.0',
-    permissions: ['storage', 'tabs'],
+    permissions: ['storage', 'tabs', 'scripting'],
     host_permissions: ['<all_urls>'],
     action: {
       default_title: '__MSG_stExtName__',
