@@ -45,15 +45,29 @@
         subtitle: "Break the limits of quiet videos and low-volume streams with zero distortion.",
         volume: 350,
         preset: "normal",
-        limiter: true
+        limiter: true,
+        flag: "us",
+        bullets: [
+          "Boost quiet videos and browser tabs up to 600%",
+          "Real-time 12-segment responsive VU meter feedback",
+          "Interactive low-latency Web Audio API offscreen engine",
+          "Instant one-click volume presets (100%, 200%, 300%, 600%)"
+        ]
       },
       {
         tag: "AUDIO EQUALIZATION",
         title: "Fine-Tuned Tone Presets",
-        subtitle: "Clarity for dialogue, punchy bass for music, and compressed dynamics for night listening.",
+        subtitle: "Tailored acoustic curves for speech, bass-heavy music, and late-night listening.",
         volume: 200,
         preset: "bass",
-        limiter: true
+        limiter: true,
+        flag: "es",
+        bullets: [
+          "Voice Boost (+9dB): crystallize spoken dialogue and podcasts",
+          "Bass Punch (+11dB): deep low-end resonance for music",
+          "Night Mode: dynamic compressor for calm, balanced listening",
+          "Anti-distortion limiter to eliminate clipping and harsh sound"
+        ]
       },
       {
         tag: "SMART MULTI-TAB CONTROL",
@@ -61,7 +75,14 @@
         subtitle: "Per-site volume memory and instant mute for background audio with a single click.",
         volume: 180,
         preset: "voice",
-        limiter: true
+        limiter: true,
+        flag: "fr",
+        bullets: [
+          "Per-site memory: remembers custom volume automatically",
+          "Cross-tab audio monitor: see all tabs currently playing sound",
+          "Independent background tab muting with 1 click",
+          "100% local-first, zero telemetry & no data tracking"
+        ]
       }
     ];
 
@@ -70,6 +91,142 @@
       ctx.roundRect(x, y, w, h, radius);
       if (fill) { ctx.fillStyle = fill; ctx.fill(); }
       if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+
+    function drawAmplifierIcon(x, y, size) {
+      ctx.save();
+      ctx.translate(x, y);
+      const scale = size / 128;
+      ctx.scale(scale, scale);
+
+      // Anillo exterior delgado de guía
+      ctx.beginPath();
+      ctx.arc(64, 64, 54, 0, Math.PI * 2);
+      ctx.strokeStyle = '#2E3744';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Dial interior oscuro pizarra con borde terracota
+      ctx.beginPath();
+      ctx.arc(64, 64, 46, 0, Math.PI * 2);
+      ctx.fillStyle = '#1B2028';
+      ctx.fill();
+      ctx.strokeStyle = '#E05A47';
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+
+      // Ondas sonoras de amplificación intercaladas
+      // 1. Arco exterior terracota intenso
+      ctx.beginPath();
+      ctx.arc(64, 64, 30, Math.PI, 0, false);
+      ctx.strokeStyle = '#E05A47';
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // 2. Arco medio terracota claro durazno
+      ctx.beginPath();
+      ctx.arc(64, 64, 22, Math.PI, 0, false);
+      ctx.strokeStyle = '#F6A89E';
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // 3. Arco interior terracota medio
+      ctx.beginPath();
+      ctx.arc(64, 64, 14, Math.PI, 0, false);
+      ctx.strokeStyle = '#E05A47';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Aguja indicadora
+      ctx.beginPath();
+      ctx.moveTo(64, 64);
+      ctx.lineTo(80, 40);
+      ctx.strokeStyle = '#F6A89E';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Centro / eje
+      ctx.beginPath();
+      ctx.arc(64, 64, 7, 0, Math.PI * 2);
+      ctx.fillStyle = '#E05A47';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawUSAFlag(x, y, w, h) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 2);
+      ctx.clip();
+
+      // 7 franjas (alternadas rojo y blanco)
+      const stripeH = h / 7;
+      for (let i = 0; i < 7; i++) {
+        ctx.fillStyle = i % 2 === 0 ? '#B22234' : '#FFFFFF';
+        ctx.fillRect(x, y + (i * stripeH), w, stripeH + 0.5);
+      }
+
+      // Cantón azul
+      const cantonW = w * 0.45;
+      const cantonH = stripeH * 4;
+      ctx.fillStyle = '#3C3B6E';
+      ctx.fillRect(x, y, cantonW, cantonH);
+
+      // Micro estrellas / puntos blancos
+      ctx.fillStyle = '#FFFFFF';
+      const dotsX = [x + cantonW * 0.25, x + cantonW * 0.5, x + cantonW * 0.75];
+      const dotsY = [y + cantonH * 0.3, y + cantonH * 0.7];
+      dotsX.forEach(dx => {
+        dotsY.forEach(dy => {
+          ctx.beginPath();
+          ctx.arc(dx, dy, 0.75, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      });
+
+      ctx.restore();
+    }
+
+    function drawSpainFlag(x, y, w, h) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 2);
+      ctx.clip();
+
+      const topH = h * 0.25;
+      const midH = h * 0.50;
+      const botH = h * 0.25;
+
+      ctx.fillStyle = '#AA151B';
+      ctx.fillRect(x, y, w, topH);
+      ctx.fillStyle = '#F1BF00';
+      ctx.fillRect(x, y + topH, w, midH);
+      ctx.fillStyle = '#AA151B';
+      ctx.fillRect(x, y + topH + midH, w, botH);
+
+      ctx.restore();
+    }
+
+    function drawFranceFlag(x, y, w, h) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 2);
+      ctx.clip();
+
+      const stripeW = w / 3;
+      ctx.fillStyle = '#002395';
+      ctx.fillRect(x, y, stripeW, h);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(x + stripeW, y, stripeW, h);
+      ctx.fillStyle = '#ED2939';
+      ctx.fillRect(x + stripeW * 2, y, stripeW, h);
+
+      ctx.restore();
     }
 
     function renderSlide(index) {
@@ -99,42 +256,37 @@
       ctx.textAlign = 'left';
       
       // Tag pill
-      drawCard(100, 220, 240, 32, 16, 'rgba(224, 90, 71, 0.15)', '#E05A47');
+      drawCard(100, 150, 240, 32, 16, 'rgba(224, 90, 71, 0.15)', '#E05A47');
       ctx.fillStyle = '#E05A47';
       ctx.font = '600 12px -apple-system, sans-serif';
-      ctx.fillText(s.tag, 120, 241);
+      ctx.fillText(s.tag, 120, 171);
 
       // Título
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '700 46px -apple-system, sans-serif';
-      ctx.fillText(s.title, 100, 315);
+      ctx.fillText(s.title, 100, 235);
 
       // Subtítulo
       ctx.fillStyle = '#94A3B8';
-      ctx.font = '400 20px -apple-system, sans-serif';
+      ctx.font = '400 19px -apple-system, sans-serif';
       const words = s.subtitle.split(' ');
       let line = '';
-      let lineY = 365;
+      let lineY = 285;
       for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + ' ';
-        if (ctx.measureText(testLine).width > 480 && n > 0) {
+        if (ctx.measureText(testLine).width > 500 && n > 0) {
           ctx.fillText(line, 100, lineY);
           line = words[n] + ' ';
-          lineY += 32;
+          lineY += 30;
         } else {
           line = testLine;
         }
       }
       ctx.fillText(line, 100, lineY);
 
-      // Beneficios en viñetas
-      const bullets = [
-        "Up to 600% volume boost",
-        "Hardware limiter anti-clipping",
-        "100% private, local-first engine"
-      ];
+      // Beneficios en viñetas diferenciados por slide
       lineY += 45;
-      bullets.forEach(b => {
+      s.bullets.forEach(b => {
         // Dot terracotta
         ctx.fillStyle = '#E05A47';
         ctx.beginPath();
@@ -142,12 +294,25 @@
         ctx.fill();
 
         ctx.fillStyle = '#CBD5E1';
-        ctx.font = '500 16px -apple-system, sans-serif';
+        ctx.font = '500 15px -apple-system, sans-serif';
         ctx.fillText(b, 124, lineY + 5);
-        lineY += 30;
+        lineY += 34;
       });
 
-      // 3. Columna derecha: Mockup fiel del Popup de Amplifier (340x540)
+      // Logo en la esquina inferior izquierda idéntico al icon.svg oficial
+      const iconBottomSize = 56;
+      drawAmplifierIcon(100, 680, iconBottomSize);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '700 22px -apple-system, sans-serif';
+      ctx.fillText('Amplifier', 172, 706);
+
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '500 13px -apple-system, sans-serif';
+      ctx.fillText('Tab Volume & Audio Booster', 172, 726);
+
+      // 3. Columna derecha: Mockup fiel del Popup de Amplifier (360x540)
       const px = 760;
       const py = 130;
       const pw = 360;
@@ -160,27 +325,23 @@
       drawCard(px, py, pw, ph, 16, '#181D24', '#2D3542');
       ctx.shadowColor = 'transparent';
 
-      // Header del popup
-      // Logo circular
-      ctx.fillStyle = '#1B2028';
-      ctx.beginPath();
-      ctx.arc(px + 36, py + 36, 16, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#E05A47';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      // Header del popup con el logo oficial
+      drawAmplifierIcon(px + 20, py + 20, 32);
 
       // Brand text
       ctx.fillStyle = '#F8FAFC';
       ctx.font = '700 17px -apple-system, sans-serif';
       ctx.fillText('Amplifier', px + 62, py + 42);
 
-      // Idioma selector mockup (bandera US)
+      // Selector de idioma dinámico (1: USA, 2: España, 3: Francia)
       drawCard(px + pw - 78, py + 24, 30, 24, 4, '#222933', '#334155');
-      ctx.fillStyle = '#AA151B';
-      ctx.fillRect(px + pw - 74, py + 28, 22, 16);
-      ctx.fillStyle = '#F1BF00';
-      ctx.fillRect(px + pw - 74, py + 32, 22, 8);
+      if (s.flag === 'es') {
+        drawSpainFlag(px + pw - 74, py + 28, 22, 16);
+      } else if (s.flag === 'fr') {
+        drawFranceFlag(px + pw - 74, py + 28, 22, 16);
+      } else {
+        drawUSAFlag(px + pw - 74, py + 28, 22, 16);
+      }
 
       // Theme toggle icon
       drawCard(px + pw - 42, py + 24, 26, 24, 4, '#222933', '#334155');
@@ -275,8 +436,12 @@
       const limY = py + 430;
       drawCard(px + 25, limY, pw - 50, 42, 6, '#1B2028', '#28313D');
       ctx.fillStyle = '#F1F5F9';
-      ctx.font = '500 13px -apple-system, sans-serif';
-      ctx.fillText('Anti-Clipping Limiter', px + 37, limY + 26);
+      ctx.font = '600 13px -apple-system, sans-serif';
+      ctx.fillText('Anti-distortion', px + 37, limY + 20);
+
+      ctx.fillStyle = '#64748B';
+      ctx.font = '400 10.5px -apple-system, sans-serif';
+      ctx.fillText('Prevents clipping at high volume', px + 37, limY + 34);
 
       // Switch
       drawCard(px + pw - 65, limY + 12, 32, 18, 9, '#E05A47', null);
