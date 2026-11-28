@@ -35,10 +35,11 @@ No cambiar estas claves sin migración explícita.
 - Los metadatos de la tienda viven en `public/_locales/{en,es,pt_BR,fr,de,ja}/messages.json`.
 - Todas las claves deben existir simétricamente en los 6 idiomas. Fallback seguro a `en`.
 
-## Reglas de UI y Paleta (Studio Brass)
+## Reglas de UI y Paleta (Acoustic Slate)
 
 - Tema claro y oscuro con detección inicial del sistema + selector manual persistido.
-- **Cero emojis** en toda la interfaz, código o metadatos. Solo iconos SVG limpios.
+- **Paleta Acoustic Slate:** Pizarra frío (`#F3F5F7` / `#12151A`) y acento terracota mate (`#E05A47`).
+- Selector de idioma con menú desplegable e iconos SVG vectoriales de banderas (sin emojis ni dependencias de red).
 - Autofocus en el slider de volumen (`#volume-slider`) al abrir el popup.
 - Porcentaje con `font-variant-numeric: tabular-nums` para evitar saltos visuales.
 - Navegación por teclado: `←` / `→` ajustan volumen en pasos de 5%, `Shift+←` / `Shift+→` en pasos de 25%, `M` silencia/restaura, `R` resetea a 100%, `1–4` cambian preset.
@@ -46,7 +47,7 @@ No cambiar estas claves sin migración explícita.
 ## Marca Personal
 
 - `"author": "Nicolas Valenzuela (Beto18v)"` en `package.json`.
-- Footer con enlace al atajo de Chrome + nombre y enlaces a `https://nival.is-a.dev` y `https://github.com/Beto18v`.
+- Footer con enlace a configuración de atajos de Chrome ("Agregar atajo" / `chrome://extensions/shortcuts`) + texto "Created by Nicolas Valenzuela" con enlace directo a `https://nival.is-a.dev`.
 
 ## Regla de Oro — Git y Verificación
 

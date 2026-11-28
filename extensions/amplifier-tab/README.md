@@ -20,12 +20,12 @@ Amplificador y ecualizador de audio por pestaña que permite elevar el volumen h
   - **Noche:** Rango dinámico comprimido para ver contenido de noche sin sobresaltos.
 - **Memoria automática por sitio web:** Guarda automáticamente en `chrome.storage.local` el volumen y preset elegido para dominios frecuentes (ej. `youtube.com`).
 - **Panel de pestañas audibles:** Visualiza en tiempo real las otras pestañas del navegador que están reproduciendo sonido para silenciarlas o cambiar a ellas en 1 clic.
-- **Paleta Studio Brass (Light & Dark):** Diseño inspirado en amplificadores de estudio vintage con vúmetro segmentado y tipografía con números tabulares para evitar saltos.
-- **Internacionalización en 6 idiomas:** Inglés, español, portugués brasileño, francés, alemán y japonés.
+- **Paleta Acoustic Slate (Light & Dark):** Diseño inspirado en monitores de estudio analógicos con fondo pizarra frío, acentos terracota mate (`#E05A47`), vúmetro segmentado y tipografía con números tabulares para evitar saltos.
+- **Internacionalización en 6 idiomas con banderas:** Selector con banderas SVG vectoriales para inglés, español, portugués brasileño, francés, alemán y japonés.
 
 ## Atajos de teclado
 
-- **Abrir popup:** `Alt+Shift+A` (configurable en `chrome://extensions/shortcuts`).
+- **Atajo personalizable:** Haz clic en **Agregar atajo** en el pie del popup para configurarlo en `chrome://extensions/shortcuts` (por defecto `Alt+Shift+A`).
 - **Dentro del popup:**
   - `←` / `→` o `↓` / `↑`: Ajuste fino de volumen (±5%).
   - `Shift + ←` / `Shift + →`: Ajuste rápido (±25%).
@@ -82,4 +82,4 @@ Amplifier Tab funciona de manera 100% local en tu navegador. No realiza ninguna 
 
 Licencia MIT.
 
-**Nicolas Valenzuela (Beto18v)** | [nival.is-a.dev](https://nival.is-a.dev) | [github.com/Beto18v](https://github.com/Beto18v)
+Created by **[Nicolas Valenzuela](https://nival.is-a.dev)**.
