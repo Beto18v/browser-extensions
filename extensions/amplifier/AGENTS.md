@@ -51,6 +51,9 @@ Never alter these keys without an explicit schema migration strategy.
 ## Privacy & Chrome Web Store Publication
 
 - Multilingual privacy policy in `PRIVACY_POLICY.md` covering all 6 supported locales.
+- **Store Dashboard Privacy Policy URL:**  
+  `https://raw.githubusercontent.com/Beto18v/browser-extensions/main/extensions/amplifier/PRIVACY_POLICY.md`  
+  (Always use `raw.githubusercontent.com` because Google rejects GitHub `/blob/` URLs).
 - Canvas promotional asset generator in `assets/webstore-promo.html` exporting official 1280 × 800 px screenshots.
 - Developer contact email: `nicolasalbertov18@gmail.com`.
 - Bug tracker: `https://github.com/Beto18v/browser-extensions/issues`.

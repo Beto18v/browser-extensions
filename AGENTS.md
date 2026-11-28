@@ -60,6 +60,10 @@ Every extension in this suite must symmetrically support the 6 canonical locales
   - Formal 100% Local-First declaration: zero telemetry, zero analytics, zero remote database connections.
   - Granular technical justification for every Manifest V3 permission requested.
   - Official developer contact details: name, portfolio ([nival.is-a.dev](https://nival.is-a.dev)), and official email (`nicolasalbertov18@gmail.com`).
+- **Store Dashboard Privacy Policy URL:**
+  - In the Chrome Web Store Developer Dashboard, always provide the **raw GitHub content URL**:  
+    `https://raw.githubusercontent.com/Beto18v/browser-extensions/main/extensions/<name>/PRIVACY_POLICY.md`
+  - Never use the GitHub `/blob/` URL, as Google's automated crawler cannot execute client-side GitHub bundles and will reject the link.
 - **Store Promotional Assets:** Every extension must provide a standalone generator in `assets/webstore-promo.html` exporting official 1280 × 800 px canvas promotional screenshots.
 
 ## Node.js 22.14 Compatibility

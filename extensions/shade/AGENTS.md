@@ -49,6 +49,16 @@ Never alter these keys without an explicit schema migration strategy.
 - Zero Unicode emojis across all interfaces and code.
 - Keyboard navigation: `Space` or `Enter` toggles main switch, `1–4` selects presets, `R` resets sliders to preset defaults, `C` toggles canvas darkening (`darkenCanvas`), `Escape` dismisses menus.
 
+## Privacy & Chrome Web Store Publication
+
+- Multilingual privacy policy in `PRIVACY_POLICY.md` covering all 6 supported locales.
+- **Store Dashboard Privacy Policy URL:**  
+  `https://raw.githubusercontent.com/Beto18v/browser-extensions/main/extensions/shade/PRIVACY_POLICY.md`  
+  (Always use `raw.githubusercontent.com` because Google rejects GitHub `/blob/` URLs).
+- Canvas promotional asset generator in `assets/webstore-promo.html` exporting official 1280 × 800 px screenshots.
+- Developer contact email: `nicolasalbertov18@gmail.com`.
+- Bug tracker: `https://github.com/Beto18v/browser-extensions/issues`.
+
 ## Personal Branding
 
 - `"author": "Nicolas Valenzuela (Beto18v)"` in `package.json`.
